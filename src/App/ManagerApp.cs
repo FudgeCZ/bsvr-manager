@@ -165,14 +165,15 @@ public partial class ManagerApp : AppMain
 
     void RescanMods(Profile p)
     {
+        List<ModInstaller.InstalledMod> scan = null;
+        string scanError = null;
+        var sizes = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         try
         {
-            var scan = _mods.ScanInstalled(p);
-            _modsScanCache[p.Id] = scan;
+            scan = _mods.ScanInstalled(p);
             if (_profiles.ActiveId == p.Id)
             {
                 // installed sizes for the mods table — from the mod's own BSIPA manifest file list
-                _modSizes.Clear();
                 foreach (var im in scan)
                 {
                     try
@@ -184,14 +185,26 @@ public partial class ManagerApp : AppMain
                             var fp = System.IO.Path.Combine(p.Path, f.Replace('/', System.IO.Path.DirectorySeparatorChar));
                             if (File.Exists(fp)) sum += new FileInfo(fp).Length;
                         }
-                        if (sum > 0) _modSizes[im.Name] = sum;
+                        if (sum > 0) sizes[im.Name] = sum;
                     }
                     catch { }
                 }
-                _desiredProfile = null; // desired state reseeds from the fresh scan
             }
         }
-        catch (Exception e) { OnCoreStatus("Mod scan failed: " + e.Message); }
+        catch (Exception e) { scanError = e.Message; }
+
+        bool isActive = _profiles.ActiveId == p.Id;
+        Ui(() =>
+        {
+            if (scan != null) _modsScanCache[p.Id] = scan;
+            if (isActive)
+            {
+                _modSizes.Clear();
+                foreach (var kv in sizes) _modSizes[kv.Key] = kv.Value;
+                _desiredProfile = null; // desired state reseeds from the fresh scan
+            }
+            if (scanError != null) { _status = "Mod scan failed: " + scanError; RefreshStatusLabels(); }
+        });
     }
 
     public override IEnumerable<Dictionary<string, string>> ProvideData(string key)
@@ -243,6 +256,7 @@ public partial class ManagerApp : AppMain
                             ["size"] = inst && _modSizes.TryGetValue(m.Name, out var sz) ? FormatSize(sz) : "-",
                             ["description"] = m.Description ?? "",
                             ["sel"] = _modsDesired.Contains(m.Name) ? "1" : "0",
+                            ["canUninstall"] = inst ? "1" : "0",
                         });
                     }
                 }

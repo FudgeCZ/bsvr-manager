@@ -45,6 +45,11 @@ public static class UiLoader
 
         control.Position = new Vector2(widget.X, widget.Y);
         control.Size = new Vector2(widget.W, widget.H);
+
+        // per-row visibility: a "visible" prop may carry a token ("{canUninstall}" -> "1"/"0")
+        var visTok = UiTokens.Interpolate(widget.Props.Str("visible"), row);
+        if (visTok is "0" or "false")
+            control.Visible = false;
         control.MouseFilter = ctx?.EditMode == true
             ? Control.MouseFilterEnum.Ignore
             : (control is Panel or ColorRect or UiProgress && !IsInteractive(widget.Type)

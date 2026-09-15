@@ -362,7 +362,8 @@
        "text": "Uninstall",
        "fontSize": 15,
        "bgColor": "#59262a",
-       "radius": 8
+       "radius": 8,
+       "visible": "{canUninstall}"
       }
      }
     ]

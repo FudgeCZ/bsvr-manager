@@ -110,6 +110,11 @@ public class ModInstaller
     static string BsipaMarker(Profile p) => System.IO.Path.Combine(p.Path, "winhttp.dll");
 
     static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    static ModInstaller()
+    {
+        // BeatMods' CDN returns 403 for requests without a User-Agent
+        Http.DefaultRequestHeaders.UserAgent.ParseAdd("BSVRManager/1.0");
+    }
 
     public ModInstaller(Settings settings) { _settings = settings; }
 
@@ -296,9 +301,29 @@ public class ModInstaller
     public List<InstalledMod> ScanInstalled(Profile profile)
     {
         var result = new List<InstalledMod>();
+
         var plugins = System.IO.Path.Combine(profile.Path, "Plugins");
-        if (!Directory.Exists(plugins)) return result;
-        foreach (var mf in Directory.GetFiles(plugins, "*.manifest"))
+        bool hasPlugins = Directory.Exists(plugins);
+        if (!hasPlugins && !File.Exists(System.IO.Path.Combine(profile.Path, "winhttp.dll"))
+            && !File.Exists(InstallsPath(profile)))
+            return result;
+
+        // BSIPA for imported profiles: winhttp.dll in the root, no manifest of its own
+        var bsipaMarker = System.IO.Path.Combine(profile.Path, "winhttp.dll");
+        if (File.Exists(bsipaMarker))
+        {
+            var ver = "";
+            try { ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(bsipaMarker).FileVersion ?? ""; } catch { }
+            result.Add(new InstalledMod
+            {
+                Name = "BSIPA",
+                Version = ver,
+                Enabled = true,
+                DllPath = bsipaMarker,
+                Managed = true,
+            });
+        }
+        foreach (var mf in hasPlugins ? Directory.GetFiles(plugins, "*.manifest") : Array.Empty<string>())
         {
             var m = ReadManifest(mf);
             if (m == null || (string.IsNullOrEmpty(m.Name) && string.IsNullOrEmpty(m.Id))) continue;
@@ -321,9 +346,25 @@ public class ModInstaller
                 FileCount = m.Files.Count,
             });
         }
+        // install records: our own installs whose files the depot may already ship
+        // (BSIPA) or whose manifest went missing — they still count as installed
+        var known = result.Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var rec in ListInstalledRecs(profile))
+        {
+            if (string.IsNullOrEmpty(rec.Name) || known.Contains(rec.Name)) continue;
+            result.Add(new InstalledMod
+            {
+                Name = rec.Name,
+                Version = rec.Version,
+                Enabled = true,
+                Managed = true,
+                Files = rec.Files,
+            });
+        }
+
         // unmanaged dlls in Plugins without a manifest
         var manifestNames = result.Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var dll in Directory.GetFiles(plugins, "*.dll"))
+        foreach (var dll in hasPlugins ? Directory.GetFiles(plugins, "*.dll") : Array.Empty<string>())
         {
             var name = System.IO.Path.GetFileNameWithoutExtension(dll);
             if (manifestNames.Contains(name)) continue;
