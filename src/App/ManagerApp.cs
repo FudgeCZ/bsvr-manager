@@ -702,6 +702,21 @@ public partial class ManagerApp : AppMain
     {
         var exe = System.IO.Path.Combine(p.Path, "Beat Saber.exe");
         if (!File.Exists(exe)) { _status = $"Beat Saber.exe not found in '{p.Name}'."; RefreshStatusLabels(); return; }
+
+        // Beat Saber restarts itself through Steam when launched directly, which makes Steam
+        // close this copy and open the one from its own library. A steam_appid.txt next to
+        // the exe tells Steamworks the game is already running and stops that restart.
+        // Skipped for the actual Steam install — Steam restarting it is harmless there.
+        bool isSteamInstall = false;
+        if (!string.IsNullOrEmpty(_settings.SteamBsPath))
+            isSteamInstall = System.IO.Path.GetFullPath(p.Path).Equals(
+                System.IO.Path.GetFullPath(_settings.SteamBsPath), System.StringComparison.OrdinalIgnoreCase);
+        if (!isSteamInstall && !File.Exists(System.IO.Path.Combine(p.Path, "steam_appid.txt")))
+        {
+            try { File.WriteAllText(System.IO.Path.Combine(p.Path, "steam_appid.txt"), SteamConsoleDownload.AppId.ToString()); }
+            catch { }
+        }
+
         try
         {
             Process.Start(new ProcessStartInfo(exe) { WorkingDirectory = p.Path });
