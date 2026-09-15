@@ -10,9 +10,9 @@ namespace BSVRManager.App;
 /// </summary>
 public partial class VrHost : Node3D
 {
-    const float Dist = 1.1f;             // head distance to the center panel
-    const float SideDist = 1.4f;         // side panels sit farther from the player
-    const float SideAngle = 40f;         // side panel angle off the forward axis (deg)
+    const float Dist = 1.1f;         // center panel distance (m)
+    const float SideDist = 1.1f;     // side panel distance (m)
+    const float SideAngle = 45f;     // side panel angle off the forward axis (deg)
 
     XROrigin3D _origin;
     XRCamera3D _camera;
@@ -143,16 +143,14 @@ public partial class VrHost : Node3D
 
     void PlacePanel(MeshInstance3D panel, Vector3 eye, Vector3 forward, int side)
     {
+        // forward rotated SideAngle toward that side, at the same 1.1 m distance
+        var right = forward.Cross(Vector3.Up).Normalized();
+        float ang = SideAngle * MathF.PI / 180f;
         Vector3 pos;
         if (side == 0)
             pos = eye + forward * Dist;
         else
-        {
-            // sides on a wider, farther arc so they don't crowd the player
-            float ang = SideAngle * MathF.PI / 180f * side;
-            var dir = forward * MathF.Cos(ang) + new Vector3(1, 0, 0) * MathF.Sin(ang) * side;
-            pos = eye + dir * SideDist;
-        }
+            pos = eye + forward * (SideDist * MathF.Cos(ang)) + right * (SideDist * MathF.Sin(ang) * side);
         panel.GlobalPosition = pos;
         var toEye = eye - pos;
         panel.LookAt(pos - toEye, Vector3.Up); // front face toward the eye

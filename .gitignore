@@ -28,3 +28,4 @@ out/
 # itch.io distribution (local only, never pushed)
 itch/
 tools/butler/
+PROJECT_STATUS.md
