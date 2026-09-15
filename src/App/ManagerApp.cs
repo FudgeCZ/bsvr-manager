@@ -256,16 +256,15 @@ public partial class ManagerApp : AppMain
                 {
                     bool dl = _catalog.IsDownloadable(e);
                     var owned = OwnedBy(e.Version);
-                    bool moddable = IsModdable(e.Version);
                     string label, color;
                     if (owned != null) { label = "In profiles"; color = "#3f9d63"; }
                     else if (!dl) { label = "-"; color = "#2a3140"; }
                     else { label = "Download"; color = "#2f6fce"; }
                     string status = owned != null
-                        ? $"already owned · profile '{owned.Name}'"
-                        : e == newest ? "latest" + (moddable ? " · moddable" : " · not moddable")
-                        : !moddable ? "not moddable"
-                        : "moddable" + (e.Recommended ? " · recommended" : "");
+                        ? $"already owned · profile '{owned.Name}' · has BS {Strip(owned.GameVersion())}"
+                        : e == newest ? "latest"
+                        : e.Recommended ? "recommended"
+                        : "";
                     return new Dictionary<string, string>
                     {
                         ["id"] = e.Version,
@@ -739,20 +738,64 @@ public partial class ManagerApp : AppMain
             return;
         }
 
-        // not logged in → one-time login popup with a QR code; the download resumes
-        // automatically once the QR is approved (or after a password login in Settings)
+        if (DepotDownload.HasCachedLogin())
+        {
+            // DepotDownloader already has a cached login (from a previous QR approval)
+            var profile = PendingOrCreate(version, entry);
+            StartDepotDownload(profile, entry);
+            return;
+        }
+
+        // not logged in at all: fetch the helpers if needed, then show the QR login popup;
+        // the download resumes automatically once the QR is approved (or after a password
+        // login in Settings)
         _pendingVersion = version;
         _pendingEntry = entry;
         if (_pendingProfile == null)
             _pendingProfile = _profiles.CreateInstance("BS " + version, version, entry.Manifest);
 
-        bool qr = DepotDownload.FindExe() != null;
-        _status = qr
-            ? "Scan the QR code with the Steam mobile app to approve the login."
-            : "Background downloads need a one-time Steam login.";
+        _status = "Preparing the one-time login…";
         RefreshStatusLabels();
-        if (qr) StartQrSession();
-        OpenModal("loginModal");
+        LoadBegin("Preparing download helpers…");
+        var myVersion = version;
+        Task.Run(() =>
+        {
+            DepotDownload.EnsureInstalled(ddOk =>
+            {
+                SteamCmdDownload.EnsureInstalled(scOk =>
+                {
+                    Ui(() =>
+                    {
+                        LoadEnd();
+                        if (_pendingVersion != myVersion) return; // cancelled meanwhile
+                        _status = ddOk
+                            ? "Scan the QR code with the Steam mobile app to approve the login."
+                            : scOk
+                                ? "Helpers ready — log in once with your Steam account (QR unavailable)."
+                                : "Could not download the login helpers — check your internet connection.";
+                        RefreshStatusLabels();
+                        if (ddOk) StartQrSession();
+                        OpenModal("loginModal");
+                    });
+                });
+            });
+        });
+    }
+
+    void StartDepotDownload(Profile profile, VersionCatalog.Entry entry)
+    {
+        LoadBegin($"Downloading Beat Saber {entry.Version}…");
+        _status = $"Downloading Beat Saber {entry.Version} → profile '{profile.Name}'…";
+        RefreshStatusLabels();
+        var session = new DepotDownload(_settings);
+        session.OnStatus = s => OnCoreStatus(s);
+        session.OnDone += ok => Ui(() =>
+        {
+            if (ok) _profiles.Activate(profile.Id);
+            RefreshCurrent();
+            LoadEnd();
+        });
+        session.Start(profile, entry.Manifest);
     }
 
     Profile PendingOrCreate(string version, VersionCatalog.Entry entry)
@@ -786,7 +829,7 @@ public partial class ManagerApp : AppMain
             CloseModal("loginModal");
             if (ok)
             {
-                _status = "Steam login approved — download continues in the background.";
+                _status = "Steam login approved — download complete.";
                 if (_pendingProfile != null) { _profiles.Activate(_pendingProfile.Id); _pendingProfile = null; }
                 _pendingVersion = null;
                 _pendingEntry = null;

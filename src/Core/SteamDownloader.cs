@@ -258,11 +258,57 @@ public class DepotDownload
         var candidates = new[]
         {
             Environment.GetEnvironmentVariable("BSMOD_DEPOTDOWNLOADER"),
+            System.IO.Path.Combine(SteamCmdDownload.ExeDir, "tools", "DepotDownloader", "DepotDownloader.exe"),
             System.IO.Path.Combine(SteamCmdDownload.ExeDir, "tools", "DepotDownloader.exe"),
             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Programs", "bs-manager", "resources", "assets", "scripts", "DepotDownloader.exe"),
         };
         return candidates.FirstOrDefault(File.Exists);
+    }
+
+    /// <summary>Downloads the latest DepotDownloader release (GitHub) when missing, then reports.
+    /// The zip extracts into tools\DepotDownloader\ (self-contained).</summary>
+    public static void EnsureInstalled(Action<bool> done)
+    {
+        if (FindExe() != null) { done(true); return; }
+        new Thread(() =>
+        {
+            try
+            {
+                var toolsDir = Path.Combine(SteamCmdDownload.ExeDir, "tools");
+                Directory.CreateDirectory(toolsDir);
+                using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+                http.DefaultRequestHeaders.UserAgent.ParseAdd("BSVRManager/1.0");
+                var rel = http.GetStringAsync("https://api.github.com/repos/SteamRE/DepotDownloader/releases/latest").GetAwaiter().GetResult();
+                string url = null;
+                using (var doc = System.Text.Json.JsonDocument.Parse(rel))
+                {
+                    foreach (var a in doc.RootElement.GetProperty("assets").EnumerateArray())
+                    {
+                        var name = a.GetProperty("name").GetString() ?? "";
+                        if (name.EndsWith("windows-x64.zip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            url = a.GetProperty("browser_download_url").GetString();
+                            break;
+                        }
+                    }
+                }
+                if (url == null) { DepotLog("DepotDownloader auto-install: no windows-x64 asset"); done(false); return; }
+                var zipPath = Path.Combine(toolsDir, "dd.zip");
+                File.WriteAllBytes(zipPath, http.GetByteArrayAsync(url).GetAwaiter().GetResult());
+                var extractDir = Path.Combine(toolsDir, "DepotDownloader");
+                if (Directory.Exists(extractDir)) Directory.Delete(extractDir, true);
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, extractDir, overwriteFiles: true);
+                File.Delete(zipPath);
+                DepotLog("DepotDownloader auto-installed");
+                done(FindExe() != null);
+            }
+            catch (Exception e)
+            {
+                DepotLog("DepotDownloader auto-install failed: " + e.Message);
+                done(false);
+            }
+        }) { IsBackground = true }.Start();
     }
 
     public static bool HasCachedLogin()

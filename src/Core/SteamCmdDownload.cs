@@ -29,6 +29,34 @@ public class SteamCmdDownload
     public static bool IsAvailable => File.Exists(Path.Combine(SteamCmdDir, "steamcmd.exe")) ||
                                       File.Exists(Path.Combine(SteamCmdDir, "steamcmd.sh"));
 
+    /// <summary>Downloads steamcmd (Valve's redistributable, ~2MB) when missing, then reports.</summary>
+    public static void EnsureInstalled(Action<bool> done)
+    {
+        if (IsAvailable) { done(true); return; }
+        new Thread(() =>
+        {
+            try
+            {
+                Directory.CreateDirectory(SteamCmdDir);
+                var zip = Path.Combine(SteamCmdDir, "steamcmd.zip");
+                using (var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromMinutes(5) })
+                {
+                    http.DefaultRequestHeaders.UserAgent.ParseAdd("BSVRManager/1.0");
+                    File.WriteAllBytes(zip, http.GetByteArrayAsync("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip").GetAwaiter().GetResult());
+                }
+                System.IO.Compression.ZipFile.ExtractToDirectory(zip, SteamCmdDir, overwriteFiles: true);
+                File.Delete(zip);
+                DepotDownload.DepotLog("steamcmd auto-installed");
+                done(File.Exists(Path.Combine(SteamCmdDir, "steamcmd.exe")) || File.Exists(Path.Combine(SteamCmdDir, "steamcmd.sh")));
+            }
+            catch (Exception e)
+            {
+                DepotDownload.DepotLog("steamcmd auto-install failed: " + e.Message);
+                done(false);
+            }
+        }) { IsBackground = true }.Start();
+    }
+
     readonly Settings _settings;
     public Action<string> OnStatus;
     public Action<string> OnLoginInputNeeded; // steamcmd asks for something we don't have
