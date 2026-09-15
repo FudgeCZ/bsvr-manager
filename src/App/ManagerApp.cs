@@ -480,6 +480,29 @@ public partial class ManagerApp : AppMain
                 OpenModal("removeModal");
                 break;
 
+            case "profiles.rename.ask":
+                _renameTargetId = param;
+                var current = _profiles.Profiles.FirstOrDefault(x => x.Id == param);
+                if (FindCtl("renameModal") is UiModal m)
+                    m.SetInput("Profile name", current?.Name ?? "");
+                OpenModal("renameModal");
+                break;
+
+            case "profiles.rename": // via renameModal
+                if (param == "rename" && _renameTargetId != null)
+                {
+                    var newName = (FindCtl("renameModal") as UiModal)?.InputValue;
+                    if (_profiles.Rename(_renameTargetId, newName))
+                        _status = "Profile renamed.";
+                    else
+                        _status = "Rename failed — the name was empty or unchanged.";
+                    _renameTargetId = null;
+                    RefreshCurrent();
+                    RefreshStatusLabels();
+                }
+                CloseModal("renameModal");
+                break;
+
             case "profiles.remove": // via removeModal — Delete = remove from list AND wipe the folder
                 if (_removeTargetId != null && param == "delete")
                 {
@@ -642,6 +665,7 @@ public partial class ManagerApp : AppMain
     }
 
     string _removeTargetId;
+    string _renameTargetId;
     readonly Dictionary<string, List<BeatModsClient.ModInfo>> _modsCache = new();
 
     List<BeatModsClient.ModInfo> GetAvail(Profile p)

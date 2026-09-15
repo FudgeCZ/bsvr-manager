@@ -168,6 +168,7 @@ public partial class UiModal : Control
     readonly Label _title = new();
     readonly Label _body = new();
     readonly TextureRect _image = new();
+    readonly LineEdit _input = new();
     readonly HBoxContainer _btnRow = new();
     UiWidget _widget;
 
@@ -198,6 +199,10 @@ public partial class UiModal : Control
         _image.MouseFilter = MouseFilterEnum.Ignore;
         _card.AddChild(_image);
 
+        _input.Visible = false;
+        _input.AddThemeFontSizeOverride("font_size", 20);
+        _card.AddChild(_input);
+
         _btnRow.AddThemeConstantOverride("separation", 12);
         _btnRow.Alignment = BoxContainer.AlignmentMode.End;
         _card.AddChild(_btnRow);
@@ -211,18 +216,24 @@ public partial class UiModal : Control
         _card.Position = new Vector2((w - cw) / 2, (h - ch) / 2);
         _card.Size = new Vector2(cw, ch);
         _title.Size = new Vector2(cw - 56, 44);
+        float contentH = ch - (_input.Visible ? 136f : 170f) + 46f - 74f;
         if (_image.Visible)
         {
-            float ih = ch - 170;
+            float ih = contentH;
             _image.Position = new Vector2(24, 76);
             _image.Size = new Vector2(ih, ih);
             _body.Position = new Vector2(ih + 44, 76);
-            _body.Size = new Vector2(cw - 56 - ih - 20, ch - 170);
+            _body.Size = new Vector2(cw - 56 - ih - 20, contentH);
         }
         else
         {
             _body.Position = new Vector2(28, 76);
-            _body.Size = new Vector2(cw - 56, ch - 170);
+            _body.Size = new Vector2(cw - 56, contentH);
+        }
+        if (_input.Visible)
+        {
+            _input.Position = new Vector2(28, ch - 128);
+            _input.Size = new Vector2(cw - 56, 46);
         }
         _btnRow.Position = new Vector2(28, ch - 74);
         _btnRow.Size = new Vector2(cw - 56, 52);
@@ -236,11 +247,24 @@ public partial class UiModal : Control
         Relayout();
     }
 
+    /// <summary>Shows a one-line text field; the app reads its value while the modal is open.</summary>
+    public void SetInput(string placeholder, string value)
+    {
+        _input.Visible = true;
+        _input.PlaceholderText = placeholder ?? "";
+        _input.Text = value ?? "";
+        Relayout();
+    }
+
+    public string InputValue => _input.Visible ? _input.Text : "";
+
     public void Configure(UiWidget widget, UiContext ctx, Dictionary<string, string> tokens = null)
     {
         _widget = widget; _ctx = ctx;
         ModalId = widget.Id;
         _image.Visible = false;
+        _input.Visible = widget.Props.Bool("input");
+        if (_input.Visible) _input.PlaceholderText = widget.Props.Str("placeholder", "");
         Relayout();
         _title.Text = UiTokens.Interpolate(widget.Props.Str("title", "Title"), tokens);
         SetBody(UiTokens.Interpolate(widget.Props.Str("text", ""), tokens));

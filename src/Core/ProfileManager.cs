@@ -81,6 +81,18 @@ public class ProfileManager
         File.WriteAllText(StorePath, JsonSerializer.Serialize(new Store { Profiles = Profiles, ActiveId = ActiveId }, new JsonSerializerOptions { WriteIndented = true }));
     }
 
+    /// <summary>Renames a profile (display name only — the game folder on disk is not moved).</summary>
+    public bool Rename(string id, string newName)
+    {
+        newName = (newName ?? "").Trim();
+        if (newName.Length == 0) return false;
+        var pr = Profiles.FirstOrDefault(p => p.Id == id);
+        if (pr == null || pr.Name == newName) return false;
+        pr.Name = newName;
+        Save();
+        return true;
+    }
+
     class Store
     {
         public List<Profile> Profiles { get; set; }

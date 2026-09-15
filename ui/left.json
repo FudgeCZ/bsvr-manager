@@ -110,11 +110,27 @@
       }
      },
      {
+      "id": "row_rename",
+      "type": "button",
+      "x": 238,
+      "y": 74,
+      "w": 112,
+      "h": 36,
+      "action": "profiles.rename.ask",
+      "param": "{id}",
+      "props": {
+       "text": "Rename",
+       "fontSize": 15,
+       "bgColor": "#303748",
+       "radius": 8
+      }
+     },
+     {
       "id": "row_activate",
       "type": "button",
       "x": 12,
       "y": 74,
-      "w": 118,
+      "w": 100,
       "h": 36,
       "action": "profiles.activate",
       "param": "{id}",
@@ -128,9 +144,9 @@
      {
       "id": "row_launch",
       "type": "button",
-      "x": 138,
+      "x": 120,
       "y": 74,
-      "w": 118,
+      "w": 110,
       "h": 36,
       "action": "launch.profile",
       "param": "{id}",
@@ -144,7 +160,7 @@
      {
       "id": "row_more",
       "type": "button",
-      "x": 264,
+      "x": 358,
       "y": 74,
       "w": 118,
       "h": 36,
@@ -187,6 +203,22 @@
     "buttons": "Cancel,Delete",
     "onButton": "profiles.remove"
    }
+  },
+  {
+   "id": "renameModal",
+   "type": "modal",
+   "props": {
+    "title": "Rename profile",
+    "text": "Choose a new name for this profile. The game folder on disk is not moved.",
+    "input": true,
+    "placeholder": "Profile name",
+    "buttons": "Cancel,Rename",
+    "onButton": "profiles.rename"
+   },
+   "x": 0,
+   "y": 260,
+   "w": 560,
+   "h": 400
   }
  ]
 }
