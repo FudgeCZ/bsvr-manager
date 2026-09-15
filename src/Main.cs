@@ -3,9 +3,11 @@ using Godot;
 
 namespace BSVRManager;
 
-/// <summary>Entry point (full-rect root control). VR mode starts only when a VR runtime
-/// is already running; otherwise the app opens as a normal desktop window and never
-/// spawns SteamVR in the background.</summary>
+/// <summary>Entry point (full-rect root control). When a VR runtime is already running, the app
+/// restarts itself once with XR enabled and comes up in VR; otherwise it opens as a normal
+/// desktop window and SteamVR is never spawned in the background. OpenXR in Godot can only
+/// be initialized at boot, which is why the one-shot relaunch exists — "--vr-launched" in
+/// the child's arguments makes it strictly one-shot.</summary>
 public partial class Main : Control
 {
     static readonly string[] VrRuntimeProcesses =
@@ -15,14 +17,10 @@ public partial class Main : Control
     {
         var args = OsCmdArgs();
         bool desktop = args.Contains("--desktop");
-        bool xrForced = args.Exists(a => a.StartsWith("--xr-mode"));
+        bool relaunchedForVr = args.Contains("--vr-launched");
 
-        // no explicit choice and a VR runtime is alive? relaunch with XR enabled so
-        // OpenXR initializes at boot (the only supported way)
-        if (!desktop && !xrForced && VrRuntimeRunning())
-        {
-            if (RelaunchWithXr(args)) return;
-        }
+        if (!desktop && !relaunchedForVr && VrRuntimeRunning() && RelaunchWithXr(args))
+            return;
 
         var app = new App.ManagerApp(allowVr: !desktop);
         AddChild(app);
@@ -43,7 +41,9 @@ public partial class Main : Control
             var exe = OS.GetExecutablePath();
             var psi = new ProcessStartInfo(exe) { UseShellExecute = false };
             foreach (var a in args) psi.ArgumentList.Add(a);
-            psi.ArgumentList.Add("--xr-mode on");
+            psi.ArgumentList.Add("--xr-mode");    // consumed by the engine → OpenXR boots enabled
+            psi.ArgumentList.Add("on");
+            psi.ArgumentList.Add("--vr-launched"); // survives into GetCmdlineArgs → one-shot
             Process.Start(psi);
         }
         catch (System.Exception e)
