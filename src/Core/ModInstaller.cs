@@ -308,12 +308,23 @@ public class ModInstaller
             && !File.Exists(InstallsPath(profile)))
             return result;
 
-        // BSIPA for imported profiles: winhttp.dll in the root, no manifest of its own
+        // BSIPA for imported profiles: winhttp.dll in the root, no manifest of its own.
+        // winhttp.dll's FileVersion follows the injector proxy's own line (2.7.x even on
+        // current BSIPA) — the package version lives on IPA.exe.
         var bsipaMarker = System.IO.Path.Combine(profile.Path, "winhttp.dll");
         if (File.Exists(bsipaMarker))
         {
             var ver = "";
-            try { ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(bsipaMarker).FileVersion ?? ""; } catch { }
+            var ipaExe = System.IO.Path.Combine(profile.Path, "IPA.exe");
+            if (File.Exists(ipaExe))
+            {
+                try { ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(ipaExe).FileVersion ?? ""; } catch { }
+            }
+            if (string.IsNullOrEmpty(ver))
+            {
+                try { ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(bsipaMarker).FileVersion ?? ""; } catch { }
+            }
+            if (ver.EndsWith(".0")) ver = ver[..^2];
             result.Add(new InstalledMod
             {
                 Name = "BSIPA",
