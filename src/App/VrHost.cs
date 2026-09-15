@@ -11,7 +11,8 @@ namespace BSVRManager.App;
 public partial class VrHost : Node3D
 {
     const float Dist = 1.1f;             // head distance to the center panel
-    const float SideAngle = 32f;         // degrees for the side panels
+    const float SideDist = 1.4f;         // side panels sit farther from the player
+    const float SideAngle = 40f;         // side panel angle off the forward axis (deg)
 
     XROrigin3D _origin;
     XRCamera3D _camera;
@@ -142,16 +143,19 @@ public partial class VrHost : Node3D
 
     void PlacePanel(MeshInstance3D panel, Vector3 eye, Vector3 forward, int side)
     {
-        var dist = Dist;
-        var offset = side * (_widths[1] * 0.5f + _widths[side == -1 ? 0 : 2] * 0.5f + 0.06f);
-        var center = eye + forward * dist + new Vector3(side * 1.05f, 0.05f * side, 0);
-        // arc: shift side panels back a bit so everything stays in view
-        center = eye + forward * dist;
-        center += new Vector3(1, 0, 0) * (offset * 0.55f);
-        center -= forward * (MathF.Abs(offset) * 0.35f);
-        panel.GlobalPosition = center;
-        var toEye = eye - center;
-        panel.LookAt(center - toEye, Vector3.Up); // front face toward the eye
+        Vector3 pos;
+        if (side == 0)
+            pos = eye + forward * Dist;
+        else
+        {
+            // sides on a wider, farther arc so they don't crowd the player
+            float ang = SideAngle * MathF.PI / 180f * side;
+            var dir = forward * MathF.Cos(ang) + new Vector3(1, 0, 0) * MathF.Sin(ang) * side;
+            pos = eye + dir * SideDist;
+        }
+        panel.GlobalPosition = pos;
+        var toEye = eye - pos;
+        panel.LookAt(pos - toEye, Vector3.Up); // front face toward the eye
     }
 
     void UpdateLaser(Laser laser, XRController3D ctrl, MeshInstance3D dot)
