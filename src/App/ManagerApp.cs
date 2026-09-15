@@ -705,7 +705,16 @@ public partial class ManagerApp : AppMain
 
         try
         {
-            Process.Start(new ProcessStartInfo(exe) { WorkingDirectory = p.Path });
+            // Steam sets this env var for processes it launches itself; without it Beat Saber's
+            // Steamworks check restarts the game via Steam (launching Steam's own 1.45.0 copy)
+            var psi = new ProcessStartInfo(exe)
+            {
+                WorkingDirectory = p.Path,
+                UseShellExecute = false
+            };
+            psi.EnvironmentVariables["SteamAppId"] = SteamConsoleDownload.AppId.ToString();
+            psi.EnvironmentVariables["SteamGameId"] = SteamConsoleDownload.AppId.ToString();
+            Process.Start(psi);
             _status = $"Launching '{p.Name}' — Beat Saber {p.GameVersion()}…";
         }
         catch (Exception e) { _status = "Launch failed: " + e.Message; }

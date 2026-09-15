@@ -11,7 +11,7 @@ namespace BSVRManager.App;
 public partial class VrHost : Node3D
 {
     const float Dist = 1.1f;         // center panel distance (m)
-    const float SideDist = 1.1f;     // side panel distance (m)
+    const float SideDist = 1.3f;     // side panel distance (m)
     const float SideAngle = 45f;     // side panel angle off the forward axis (deg)
 
     XROrigin3D _origin;
