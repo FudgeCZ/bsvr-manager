@@ -1,0 +1,27 @@
+# Godot
+.godot/
+*.translation
+export.cfg
+export_presets.cfg.orig
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Engine + downloaded tooling (get via tools/setup.ps1)
+tools/godot/
+tools/steamcmd/
+tools/DepotDownloader*/
+
+# Build output
+build/
+build-linux/
+out/
+
+# Local junk
+*.log
+.v2c/
+.video_agent/
+.zcode/

@@ -1,0 +1,295 @@
+{
+ "version": "1",
+ "name": "profiles",
+ "width": 1600,
+ "height": 900,
+ "background": "#14171f",
+ "children": [
+  {
+   "id": "navbar",
+   "type": "panel",
+   "x": 0,
+   "y": 0,
+   "w": 1600,
+   "h": 72,
+   "props": {
+    "bgColor": "#1e2330",
+    "radius": 0
+   },
+   "children": [
+    {
+     "id": "nav_dashboard",
+     "type": "button",
+     "x": 40,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.dashboard",
+     "props": {
+      "text": "Dashboard",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_profiles",
+     "type": "button",
+     "x": 200,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.profiles",
+     "props": {
+      "text": "Profiles",
+      "fontSize": 20,
+      "bgColor": "#477cf2",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_mods",
+     "type": "button",
+     "x": 360,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.mods",
+     "props": {
+      "text": "Mods",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_versions",
+     "type": "button",
+     "x": 520,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.versions",
+     "props": {
+      "text": "Versions",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_settings",
+     "type": "button",
+     "x": 680,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.settings",
+     "props": {
+      "text": "Settings",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "app_title",
+     "type": "label",
+     "x": 1280,
+     "y": 14,
+     "w": 280,
+     "h": 44,
+     "props": {
+      "text": "BS VR Manager",
+      "fontSize": 24,
+      "color": "#477cf2",
+      "align": "right"
+     }
+    }
+   ]
+  },
+  {
+   "id": "title",
+   "type": "label",
+   "x": 40,
+   "y": 92,
+   "w": 600,
+   "h": 46,
+   "props": {
+    "text": "Profiles",
+    "fontSize": 32
+   }
+  },
+  {
+   "id": "newProfileBtn",
+   "type": "button",
+   "x": 1180,
+   "y": 92,
+   "w": 220,
+   "h": 46,
+   "action": "nav.versions",
+   "props": {
+    "text": "+ New from version",
+    "fontSize": 19,
+    "bgColor": "#303748",
+    "radius": 10
+   }
+  },
+  {
+   "id": "importBtn",
+   "type": "button",
+   "x": 1410,
+   "y": 92,
+   "w": 150,
+   "h": 46,
+   "action": "profiles.import",
+   "props": {
+    "text": "Import\u2026",
+    "fontSize": 19,
+    "bgColor": "#303748",
+    "radius": 10
+   }
+  },
+  {
+   "id": "profilesList",
+   "type": "list",
+   "x": 40,
+   "y": 152,
+   "w": 1520,
+   "h": 620,
+   "props": {
+    "itemHeight": 96,
+    "gap": 10,
+    "dataKey": "profiles.list"
+   },
+   "itemTemplate": {
+    "id": "profile_row",
+    "type": "panel",
+    "x": 0,
+    "y": 0,
+    "w": 1520,
+    "h": 96,
+    "props": {
+     "bgColor": "#232a38",
+     "radius": 10
+    },
+    "children": [
+     {
+      "id": "row_active",
+      "type": "label",
+      "x": 16,
+      "y": 34,
+      "w": 30,
+      "h": 30,
+      "props": {
+       "text": "{active}",
+       "fontSize": 22,
+       "color": "#3f9d63"
+      }
+     },
+     {
+      "id": "row_title",
+      "type": "label",
+      "x": 56,
+      "y": 14,
+      "w": 480,
+      "h": 34,
+      "props": {
+       "text": "{title}",
+       "fontSize": 24
+      }
+     },
+     {
+      "id": "row_sub",
+      "type": "label",
+      "x": 56,
+      "y": 50,
+      "w": 700,
+      "h": 30,
+      "props": {
+       "text": "{subtitle}",
+       "fontSize": 18,
+       "color": "#9aa3b5"
+      }
+     },
+     {
+      "id": "row_activate",
+      "type": "button",
+      "x": 1040,
+      "y": 24,
+      "w": 140,
+      "h": 48,
+      "action": "profiles.activate",
+      "param": "{id}",
+      "props": {
+       "text": "Activate",
+       "fontSize": 19,
+       "bgColor": "#303748",
+       "radius": 8
+      }
+     },
+     {
+      "id": "row_launch",
+      "type": "button",
+      "x": 1190,
+      "y": 24,
+      "w": 150,
+      "h": 48,
+      "action": "launch.profile",
+      "param": "{id}",
+      "props": {
+       "text": "\u25b6 Launch",
+       "fontSize": 19,
+       "bgColor": "#3f9d63",
+       "radius": 8
+      }
+     },
+     {
+      "id": "row_more",
+      "type": "button",
+      "x": 1350,
+      "y": 24,
+      "w": 140,
+      "h": 48,
+      "action": "profiles.menu",
+      "param": "{id}",
+      "props": {
+       "text": "Delete",
+       "fontSize": 18,
+       "bgColor": "#303748",
+       "radius": 8
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "statusBar",
+   "type": "label",
+   "x": 40,
+   "y": 792,
+   "w": 1520,
+   "h": 60,
+   "props": {
+    "text": "",
+    "fontSize": 18,
+    "color": "#9aa3b5",
+    "wrap": true
+   }
+  },
+  {
+   "id": "removeModal",
+   "type": "modal",
+   "x": 480,
+   "y": 280,
+   "w": 640,
+   "h": 300,
+   "props": {
+    "title": "Remove profile?",
+    "text": "Remove this profile? 'Remove' only removes it from the list (files stay on disk). 'Delete folder' also permanently deletes its game folder.",
+    "buttons": "Cancel,Remove,Delete folder",
+    "onButton": "profiles.remove"
+   }
+  }
+ ]
+}

@@ -1,0 +1,35 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+
+config_version=5
+
+[application]
+
+config/name="BS VR Manager"
+config/description="Beat Saber mod manager in VR, with a built-in UI editor"
+run/main_scene="res://src/Main.tscn"
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0.055, 0.066, 0.09, 1)
+
+[dotnet]
+
+project/assembly_name="BSVRManager"
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+window/stretch/mode="disabled"
+
+[xr]
+
+shaders/enabled=true
+openxr/enabled=true
+openxr/startup_alert=false
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+environment/defaults/default_clear_color=Color(0.055, 0.066, 0.09, 1)

@@ -1,0 +1,148 @@
+{
+ "version": "1",
+ "name": "launchPanel",
+ "width": 460,
+ "height": 900,
+ "background": "#10131a",
+ "children": [
+  {
+   "id": "right_title",
+   "type": "label",
+   "x": 24,
+   "y": 22,
+   "w": 300,
+   "h": 42,
+   "props": {
+    "text": "Play",
+    "fontSize": 30
+   }
+  },
+  {
+   "id": "active_card",
+   "type": "panel",
+   "x": 24,
+   "y": 84,
+   "w": 412,
+   "h": 330,
+   "props": {
+    "bgColor": "#232a38",
+    "radius": 14
+   },
+   "children": [
+    {
+     "id": "active_label",
+     "type": "label",
+     "x": 20,
+     "y": 18,
+     "w": 372,
+     "h": 28,
+     "props": {
+      "text": "Active profile",
+      "fontSize": 17,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "activeName",
+     "type": "label",
+     "x": 20,
+     "y": 52,
+     "w": 372,
+     "h": 40,
+     "props": {
+      "text": "\u2026",
+      "fontSize": 25,
+      "wrap": true
+     }
+    },
+    {
+     "id": "activeVersion",
+     "type": "label",
+     "x": 20,
+     "y": 100,
+     "w": 372,
+     "h": 56,
+     "props": {
+      "text": "\u2026",
+      "fontSize": 16,
+      "color": "#9aa3b5",
+      "wrap": true
+     }
+    },
+    {
+     "id": "launchBigBtn",
+     "type": "button",
+     "x": 20,
+     "y": 170,
+     "w": 372,
+     "h": 110,
+     "action": "launch.active",
+     "props": {
+      "text": "\u25b6  LAUNCH",
+      "fontSize": 30,
+      "bgColor": "#3f9d63",
+      "radius": 12
+     }
+    },
+    {
+     "id": "launchHint",
+     "type": "label",
+     "x": 20,
+     "y": 292,
+     "w": 372,
+     "h": 28,
+     "props": {
+      "text": "Switch profiles on the left panel",
+      "fontSize": 14,
+      "color": "#6f7889",
+      "align": "center"
+     }
+    }
+   ]
+  },
+  {
+   "id": "settingsBtn",
+   "type": "button",
+   "x": 24,
+   "y": 440,
+   "w": 412,
+   "h": 62,
+   "action": "nav.settings",
+   "props": {
+    "text": "\u2699  Settings",
+    "fontSize": 22,
+    "bgColor": "#303748",
+    "radius": 10
+   }
+  },
+  {
+   "id": "modsBtn",
+   "type": "button",
+   "x": 24,
+   "y": 514,
+   "w": 412,
+   "h": 54,
+   "action": "nav.mods",
+   "props": {
+    "text": "Mods",
+    "fontSize": 19,
+    "bgColor": "#262d3d",
+    "radius": 10
+   }
+  },
+  {
+   "id": "rightStatus",
+   "type": "label",
+   "x": 24,
+   "y": 826,
+   "w": 412,
+   "h": 60,
+   "props": {
+    "text": "",
+    "fontSize": 15,
+    "color": "#9aa3b5",
+    "wrap": true
+   }
+  }
+ ]
+}

@@ -1,0 +1,457 @@
+{
+ "version": "1",
+ "name": "mods",
+ "width": 1600,
+ "height": 900,
+ "background": "#14171f",
+ "children": [
+  {
+   "id": "navbar",
+   "type": "panel",
+   "x": 0,
+   "y": 0,
+   "w": 1600,
+   "h": 72,
+   "props": {
+    "bgColor": "#1e2330",
+    "radius": 0
+   },
+   "children": [
+    {
+     "id": "nav_dashboard",
+     "type": "button",
+     "x": 40,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.dashboard",
+     "props": {
+      "text": "Dashboard",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_profiles",
+     "type": "button",
+     "x": 200,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.profiles",
+     "props": {
+      "text": "Profiles",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_mods",
+     "type": "button",
+     "x": 360,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.mods",
+     "props": {
+      "text": "Mods",
+      "fontSize": 20,
+      "bgColor": "#477cf2",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_versions",
+     "type": "button",
+     "x": 520,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.versions",
+     "props": {
+      "text": "Versions",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_settings",
+     "type": "button",
+     "x": 680,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.settings",
+     "props": {
+      "text": "Settings",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "app_title",
+     "type": "label",
+     "x": 1280,
+     "y": 14,
+     "w": 280,
+     "h": 44,
+     "props": {
+      "text": "BS VR Manager",
+      "fontSize": 24,
+      "color": "#477cf2",
+      "align": "right"
+     }
+    }
+   ]
+  },
+  {
+   "id": "title",
+   "type": "label",
+   "x": 40,
+   "y": 92,
+   "w": 300,
+   "h": 46,
+   "props": {
+    "text": "Mods",
+    "fontSize": 32
+   }
+  },
+  {
+   "id": "modsProfileName",
+   "type": "label",
+   "x": 180,
+   "y": 102,
+   "w": 500,
+   "h": 32,
+   "props": {
+    "text": "",
+    "fontSize": 19,
+    "color": "#9aa3b5"
+   }
+  },
+  {
+   "id": "bsipaBtn",
+   "type": "button",
+   "x": 1060,
+   "y": 96,
+   "w": 240,
+   "h": 42,
+   "action": "mods.installbsipa",
+   "props": {
+    "text": "Install / Repair BSIPA",
+    "fontSize": 17,
+    "bgColor": "#303748",
+    "radius": 8
+   }
+  },
+  {
+   "id": "refreshBtn",
+   "type": "button",
+   "x": 1320,
+   "y": 96,
+   "w": 240,
+   "h": 42,
+   "action": "mods.refresh",
+   "props": {
+    "text": "Refresh BeatMods",
+    "fontSize": 17,
+    "bgColor": "#303748",
+    "radius": 8
+   }
+  },
+  {
+   "id": "headerRow",
+   "type": "panel",
+   "x": 40,
+   "y": 152,
+   "w": 1520,
+   "h": 40,
+   "props": {
+    "bgColor": "#1a1f2b",
+    "radius": 8
+   },
+   "children": [
+    {
+     "id": "h_name",
+     "type": "label",
+     "x": 56,
+     "y": 8,
+     "w": 250,
+     "h": 24,
+     "props": {
+      "text": "Name",
+      "fontSize": 17,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "h_installed",
+     "type": "label",
+     "x": 320,
+     "y": 8,
+     "w": 130,
+     "h": 24,
+     "props": {
+      "text": "Installed",
+      "fontSize": 17,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "h_latest",
+     "type": "label",
+     "x": 460,
+     "y": 8,
+     "w": 130,
+     "h": 24,
+     "props": {
+      "text": "Latest",
+      "fontSize": 17,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "h_size",
+     "type": "label",
+     "x": 600,
+     "y": 8,
+     "w": 110,
+     "h": 24,
+     "props": {
+      "text": "Size",
+      "fontSize": 17,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "h_desc",
+     "type": "label",
+     "x": 720,
+     "y": 8,
+     "w": 400,
+     "h": 24,
+     "props": {
+      "text": "Description",
+      "fontSize": 17,
+      "color": "#9aa3b5"
+     }
+    }
+   ]
+  },
+  {
+   "id": "modsList",
+   "type": "list",
+   "x": 40,
+   "y": 204,
+   "w": 1520,
+   "h": 552,
+   "props": {
+    "itemHeight": 64,
+    "gap": 4,
+    "dataKey": "mods.table"
+   },
+   "itemTemplate": {
+    "id": "mod_row",
+    "type": "panel",
+    "x": 0,
+    "y": 0,
+    "w": 1520,
+    "h": 64,
+    "props": {
+     "bgColor": "#232a38",
+     "radius": 8
+    },
+    "children": [
+     {
+      "id": "sel",
+      "type": "toggle",
+      "x": 14,
+      "y": 18,
+      "w": 28,
+      "h": 28,
+      "action": "mods.select",
+      "param": "{id}",
+      "props": {
+       "checked": "{sel}",
+       "onBg": "#477cf2",
+       "offBg": "#303748",
+       "radius": 6,
+       "text": ""
+      }
+     },
+     {
+      "id": "name",
+      "type": "label",
+      "x": 56,
+      "y": 18,
+      "w": 250,
+      "h": 28,
+      "props": {
+       "text": "{name}",
+       "fontSize": 18
+      }
+     },
+     {
+      "id": "installed",
+      "type": "label",
+      "x": 320,
+      "y": 18,
+      "w": 130,
+      "h": 28,
+      "props": {
+       "text": "{installed}",
+       "fontSize": 17,
+       "color": "{installedColor}"
+      }
+     },
+     {
+      "id": "latest",
+      "type": "label",
+      "x": 460,
+      "y": 18,
+      "w": 130,
+      "h": 28,
+      "props": {
+       "text": "{latest}",
+       "fontSize": 17,
+       "color": "#c4cad6"
+      }
+     },
+     {
+      "id": "size",
+      "type": "label",
+      "x": 600,
+      "y": 18,
+      "w": 110,
+      "h": 28,
+      "props": {
+       "text": "{size}",
+       "fontSize": 16,
+       "color": "#9aa3b5"
+      }
+     },
+     {
+      "id": "description",
+      "type": "label",
+      "x": 720,
+      "y": 8,
+      "w": 640,
+      "h": 48,
+      "props": {
+       "text": "{description}",
+       "fontSize": 14,
+       "color": "#9aa3b5",
+       "wrap": true,
+       "valign": "center"
+      }
+     },
+     {
+      "id": "uninstall",
+      "type": "button",
+      "x": 1380,
+      "y": 12,
+      "w": 120,
+      "h": 40,
+      "action": "mods.uninstall",
+      "param": "{id}",
+      "props": {
+       "text": "Uninstall",
+       "fontSize": 15,
+       "bgColor": "#59262a",
+       "radius": 8
+      }
+     }
+    ]
+   },
+   "children": [
+    {
+     "id": "header",
+     "type": "panel",
+     "x": 0,
+     "y": 0,
+     "w": 1520,
+     "h": 40,
+     "props": {
+      "bgColor": "#00000000",
+      "radius": 0
+     },
+     "children": [
+      {
+       "id": "cat_title",
+       "type": "label",
+       "x": 14,
+       "y": 4,
+       "w": 400,
+       "h": 32,
+       "props": {
+        "text": "{title}",
+        "fontSize": 23
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bottomBar",
+   "type": "panel",
+   "x": 40,
+   "y": 772,
+   "w": 1520,
+   "h": 88,
+   "props": {
+    "bgColor": "#1a1f2b",
+    "radius": 12
+   },
+   "children": [
+    {
+     "id": "moreInfoBtn",
+     "type": "button",
+     "x": 24,
+     "y": 20,
+     "w": 200,
+     "h": 48,
+     "action": "mods.moreinfo",
+     "props": {
+      "text": "More info",
+      "fontSize": 19,
+      "bgColor": "#303748",
+      "radius": 10
+     }
+    },
+    {
+     "id": "modsStatus",
+     "type": "label",
+     "x": 250,
+     "y": 28,
+     "w": 880,
+     "h": 32,
+     "props": {
+      "text": "",
+      "fontSize": 16,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "applyBtn",
+     "type": "button",
+     "x": 1180,
+     "y": 20,
+     "w": 316,
+     "h": 48,
+     "action": "mods.apply",
+     "props": {
+      "text": "Install or update",
+      "fontSize": 20,
+      "bgColor": "#2f6fce",
+      "radius": 10
+     }
+    }
+   ]
+  }
+ ]
+}

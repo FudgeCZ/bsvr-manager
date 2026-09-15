@@ -1,0 +1,192 @@
+{
+ "version": "1",
+ "name": "profilesPanel",
+ "width": 560,
+ "height": 900,
+ "background": "#10131a",
+ "children": [
+  {
+   "id": "left_title",
+   "type": "label",
+   "x": 24,
+   "y": 22,
+   "w": 300,
+   "h": 42,
+   "props": {
+    "text": "Profiles",
+    "fontSize": 30
+   }
+  },
+  {
+   "id": "left_count",
+   "type": "label",
+   "x": 324,
+   "y": 30,
+   "w": 212,
+   "h": 30,
+   "props": {
+    "text": "",
+    "fontSize": 17,
+    "color": "#6f7889",
+    "align": "right"
+   }
+  },
+  {
+   "id": "addVersionBtn",
+   "type": "button",
+   "x": 24,
+   "y": 78,
+   "w": 512,
+   "h": 58,
+   "action": "nav.versions",
+   "props": {
+    "text": "+  Add version",
+    "fontSize": 22,
+    "bgColor": "#2f6fce",
+    "radius": 10
+   }
+  },
+  {
+   "id": "leftList",
+   "type": "list",
+   "x": 24,
+   "y": 154,
+   "w": 512,
+   "h": 656,
+   "props": {
+    "itemHeight": 118,
+    "gap": 10,
+    "dataKey": "profiles.list"
+   },
+   "itemTemplate": {
+    "id": "left_profile_row",
+    "type": "panel",
+    "x": 0,
+    "y": 0,
+    "w": 512,
+    "h": 118,
+    "props": {
+     "bgColor": "{color}",
+     "bgAlpha": 0.35,
+     "radius": 10
+    },
+    "children": [
+     {
+      "id": "row_active",
+      "type": "label",
+      "x": 12,
+      "y": 12,
+      "w": 26,
+      "h": 26,
+      "props": {
+       "text": "{active}",
+       "fontSize": 20,
+       "color": "#3f9d63"
+      }
+     },
+     {
+      "id": "row_title",
+      "type": "label",
+      "x": 42,
+      "y": 10,
+      "w": 456,
+      "h": 30,
+      "props": {
+       "text": "{title}",
+       "fontSize": 21
+      }
+     },
+     {
+      "id": "row_sub",
+      "type": "label",
+      "x": 42,
+      "y": 42,
+      "w": 456,
+      "h": 28,
+      "props": {
+       "text": "{subtitle}",
+       "fontSize": 15,
+       "color": "#9aa3b5"
+      }
+     },
+     {
+      "id": "row_activate",
+      "type": "button",
+      "x": 12,
+      "y": 74,
+      "w": 118,
+      "h": 36,
+      "action": "profiles.activate",
+      "param": "{id}",
+      "props": {
+       "text": "Use",
+       "fontSize": 16,
+       "bgColor": "#303748",
+       "radius": 8
+      }
+     },
+     {
+      "id": "row_launch",
+      "type": "button",
+      "x": 138,
+      "y": 74,
+      "w": 118,
+      "h": 36,
+      "action": "launch.profile",
+      "param": "{id}",
+      "props": {
+       "text": "\u25b6 Launch",
+       "fontSize": 16,
+       "bgColor": "#3f9d63",
+       "radius": 8
+      }
+     },
+     {
+      "id": "row_more",
+      "type": "button",
+      "x": 264,
+      "y": 74,
+      "w": 118,
+      "h": 36,
+      "action": "profiles.menu",
+      "param": "{id}",
+      "props": {
+       "text": "Delete",
+       "fontSize": 15,
+       "bgColor": "#303748",
+       "radius": 8
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "leftStatus",
+   "type": "label",
+   "x": 24,
+   "y": 826,
+   "w": 512,
+   "h": 60,
+   "props": {
+    "text": "",
+    "fontSize": 15,
+    "color": "#9aa3b5",
+    "wrap": true
+   }
+  },
+  {
+   "id": "removeModal",
+   "type": "modal",
+   "x": 0,
+   "y": 300,
+   "w": 560,
+   "h": 300,
+   "props": {
+    "title": "Remove profile?",
+    "text": "Remove this profile? 'Remove' only removes it from the list (files stay on disk). 'Delete folder' also permanently deletes its game folder.",
+    "buttons": "Cancel,Remove,Delete folder",
+    "onButton": "profiles.remove"
+   }
+  }
+ ]
+}
