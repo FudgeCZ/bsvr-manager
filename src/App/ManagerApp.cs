@@ -335,17 +335,14 @@ public partial class ManagerApp : AppMain
         return _modsScanCache.TryGetValue(p.Id, out var list) ? list.Count : 0;
     }
 
-    /// <summary>A playable profile providing this game version — exact match, or a later patch of
-    /// the same major.minor line (BSManager's "1.44.0" instance actually contains 1.44.1).</summary>
+    /// <summary>A playable profile running exactly this game version.</summary>
     Profile OwnedBy(string version)
     {
         var target = VersionTuple(version);
         return _profiles.Profiles.FirstOrDefault(pr =>
         {
             if (!pr.IsPlayable) return false;
-            var have = VersionTuple(pr.GameVersion());
-            if (have == target) return true;
-            return have.Item1 == target.Item1 && have.Item2 == target.Item2 && have.Item3 > target.Item3;
+            return VersionTuple(pr.GameVersion()) == target;
         });
     }
 

@@ -25,3 +25,7 @@ out/
 .v2c/
 .video_agent/
 .zcode/
+
+# itch.io distribution (local only, never pushed)
+itch/
+tools/butler/
