@@ -100,7 +100,7 @@
      "w": 280,
      "h": 44,
      "props": {
-      "text": "BS VR Manager",
+      "text": "BS VR Manager v{version}",
       "fontSize": 24,
       "color": "#477cf2",
       "align": "right"

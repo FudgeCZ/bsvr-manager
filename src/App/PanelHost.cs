@@ -29,6 +29,7 @@ public partial class PanelHost : Control
         Ctx.OnAction = (a, p, w) => App.HandleActionFromHost(this, a, p, w);
         Ctx.GetData = key => App.ProvideData(key);
         Ctx.GetImage = src => App.LoadImageFor(this, src);
+        Ctx.GlobalTokens["version"] = AppInfo.Version;
 
         Loading = new LoadingOverlay();
         AddChild(Loading);

@@ -11,6 +11,7 @@ public partial class Main : Control
     {
         var args = OsCmdArgs();
         bool vr = !args.Contains("--desktop-launched") && !args.Contains("--desktop");
+        DisplayServer.WindowSetTitle("BS VR Manager v" + App.AppInfo.Version);
         var app = new App.ManagerApp(allowVr: vr);
         AddChild(app);
     }

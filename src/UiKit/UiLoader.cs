@@ -26,6 +26,13 @@ public static class UiLoader
     public static Control BuildWidget(UiWidget widget, UiContext ctx, Dictionary<string, string> row = null)
     {
         var tokens = row;
+        if (ctx != null && ctx.GlobalTokens.Count > 0)
+        {
+            var merged = new Dictionary<string, string>(ctx.GlobalTokens);
+            if (row != null)
+                foreach (var kv in row) merged[kv.Key] = kv.Value;
+            tokens = merged;
+        }
         var control = widget.Type switch
         {
             "label" => BuildLabel(widget, ctx, tokens),

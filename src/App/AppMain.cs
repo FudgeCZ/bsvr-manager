@@ -28,8 +28,12 @@ public partial class AppMain : Control
 
     readonly bool _allowVr;
     readonly bool _debugApi;
+    readonly bool _coverShot;
+    VrHost _vrHost;
     HttpListener _listener;
     Thread _listenerThread;
+    string _shotPath;
+    System.Threading.ManualResetEventSlim _shotDone;
 
     public AppMain(bool allowVr)
     {
@@ -38,6 +42,7 @@ public partial class AppMain : Control
         var args = new List<string>(OS.GetCmdlineArgs());
         args.AddRange(OS.GetCmdlineUserArgs());
         _debugApi = args.Contains("--debug-api");
+        _coverShot = args.Contains("--cover-shot");
     }
 
     string UiDirAbs => ProjectSettings.GlobalizePath("res://ui");
@@ -48,7 +53,8 @@ public partial class AppMain : Control
         LoadScreens();
 
         // VR hosts are built in a deferred call — show initial screens after they exist.
-        if (_allowVr) { CallDeferred(nameof(SetupVr)); CallDeferred(nameof(ShowInitial)); }
+        if (_coverShot) { CallDeferred(nameof(SetupCoverShot)); }
+        else if (_allowVr) { CallDeferred(nameof(SetupVr)); CallDeferred(nameof(ShowInitial)); }
         else { StartDesktop(); ShowInitial(); }
 
         if (_debugApi) StartDebugApi();
@@ -78,29 +84,7 @@ public partial class AppMain : Control
             GetViewport().UseXR = true;
             VrActive = true;
             GD.Print("[vr] OpenXR active");
-
-            // three panels, each its own viewport: left (profiles), center (main), right (launch)
-            var made = new Dictionary<string, (SubViewport vp, PanelHost host)>();
-            foreach (var (name, w, h) in new[] { ("left", 560f, 900f), ("center", 1600f, 900f), ("right", 460f, 900f) })
-            {
-                var vp = new SubViewport
-                {
-                    Size = new Vector2I((int)w, (int)h),
-                    RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
-                    TransparentBg = false,
-                };
-                GetTree().Root.AddChild(vp);
-                var host = new PanelHost(name, w, h, PanelScreens(name), this);
-                vp.AddChild(host);
-                made[name] = (vp, host);
-            }
-            LeftHost = made["left"].host; CenterHost = made["center"].host; RightHost = made["right"].host;
-
-            var vrHost = new VrHost(this,
-                made["left"].vp, made["center"].vp, made["right"].vp,
-                new[] { 0.55f, 1.42f, 0.46f },   // panel widths (m)
-                new[] { 0.895f, 0.798f, 0.9f }); // panel heights (m)
-            AddChild(vrHost);
+            BuildVrPanels();
         }
         catch (Exception e)
         {
@@ -108,6 +92,104 @@ public partial class AppMain : Control
             VrActive = false;
             RelaunchDesktop("VR initialization failed: " + e.Message);
         }
+    }
+
+    /// <summary>The three-panel VR scene (subviewports + world-space quads). Used by the real
+    /// VR path and by --cover-shot, which renders it with a plain camera for promo art.</summary>
+    void BuildVrPanels()
+    {
+        // three panels, each its own viewport: left (profiles), center (main), right (launch)
+        var made = new Dictionary<string, (SubViewport vp, PanelHost host)>();
+        foreach (var (name, w, h) in new[] { ("left", 560f, 900f), ("center", 1600f, 900f), ("right", 460f, 900f) })
+        {
+            var vp = new SubViewport
+            {
+                Size = new Vector2I((int)w, (int)h),
+                RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
+                TransparentBg = false,
+            };
+            GetTree().Root.AddChild(vp);
+            var host = new PanelHost(name, w, h, PanelScreens(name), this);
+            vp.AddChild(host);
+            made[name] = (vp, host);
+        }
+        LeftHost = made["left"].host; CenterHost = made["center"].host; RightHost = made["right"].host;
+
+        var vrHost = new VrHost(this,
+            made["left"].vp, made["center"].vp, made["right"].vp,
+            new[] { 0.55f, 1.42f, 0.46f },   // panel widths (m)
+            new[] { 0.895f, 0.798f, 0.9f }); // panel heights (m)
+        AddChild(vrHost);
+        _vrHost = vrHost;
+    }
+
+    /// <summary>--cover-shot: build the VR panel scene without OpenXR, frame it from a
+    /// slightly-offset camera, save PNGs next to the working directory, then quit.</summary>
+    void SetupCoverShot()
+    {
+        GetWindow().UseXR = false; // render with a normal camera even if OpenXR initialized at boot
+        GetWindow().Size = new Vector2I(1280, 800);
+        // backdrop distinct from the UI background (#14171f) so panels read against it
+        var env = new Godot.Environment
+        {
+            BackgroundMode = Godot.Environment.BGMode.Color,
+            BackgroundColor = new Color(0.043f, 0.058f, 0.105f),
+            AmbientLightSource = Godot.Environment.AmbientSource.Color,
+            AmbientLightColor = new Color(0.5f, 0.6f, 0.8f),
+            AmbientLightEnergy = 0.6f,
+            GlowEnabled = true,
+            GlowIntensity = 0.5f,
+            GlowStrength = 1.0f,
+            GlowHdrThreshold = 1.1f,
+        };
+        var we = new WorldEnvironment { Environment = env };
+        AddChild(we);
+        BuildVrPanels();
+        if (_vrHost != null) _vrHost.ShowLasers = false;
+        ShowInitial();
+        _ = CoverSequence();
+    }
+
+    async System.Threading.Tasks.Task CoverSequence()
+    {
+        var tree = GetTree();
+        await ToSignal(tree.CreateTimer(2.0), SceneTreeTimer.SignalName.Timeout);
+        // wait for startup work (profile scans, catalog refresh) to report done
+        for (int i = 0; i < 60; i++)
+        {
+            var diag = DebugDiag() ?? "";
+            if (diag.Contains("\"status\":\"\"")) break;
+            await ToSignal(tree.CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
+        }
+        await ToSignal(tree.CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+        var cam = new Camera3D { Fov = 50, Current = true };
+        AddChild(cam);
+        cam.GlobalPosition = new Vector3(1.4f, 0.45f, 1.4f);
+        cam.LookAt(new Vector3(0.0f, -0.02f, -0.95f), Vector3.Up);
+        for (int i = 0; i < 8; i++) await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+        foreach (var h in new[] { LeftHost, CenterHost, RightHost })
+            if (h != null)
+                GD.Print($"[cover] host {h.HostName} current={h.Current}");
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        SaveViewportPng("cover-vr.png");
+        try
+        {
+            var logo = GD.Load<Texture2D>("res://icon.svg");
+            logo?.GetImage()?.SavePng(Path.Combine(System.Environment.CurrentDirectory, "cover-logo.png"));
+        }
+        catch (Exception e) { GD.PushWarning("[cover] logo save failed: " + e.Message); }
+        tree.Quit();
+    }
+
+    void SaveViewportPng(string fileName)
+    {
+        try
+        {
+            var img = GetViewport().GetTexture().GetImage();
+            img.SavePng(Path.Combine(System.Environment.CurrentDirectory, fileName));
+            GD.Print("[cover] saved " + fileName);
+        }
+        catch (Exception e) { GD.PushWarning("[cover] save failed: " + e.Message); }
     }
 
     /// <summary>VR failed at boot — restart once into a clean desktop window. The child runs
@@ -285,7 +367,16 @@ public partial class AppMain : Control
             CallDeferred(nameof(DeferredInvoke), action, param);
             body = "{\"ok\":true}";
         }
-        else body = "{\"help\":[/state,/click x,y,/invoke action,param]}";
+        else if (path == "/shot" && httpCtx.Request.HttpMethod == "GET")
+        {
+            var p = httpCtx.Request.QueryString["path"] ?? "";
+            using var done = new System.Threading.ManualResetEventSlim();
+            _shotPath = p; _shotDone = done;
+            CallDeferred(nameof(DeferredShot));
+            done.Wait(5000);
+            body = "{\"ok\":true}";
+        }
+        else body = "{\"help\":[/state,/click x,y,/invoke action,param,/shot?path=]}";
 
         var buf = Encoding.UTF8.GetBytes(body);
         httpCtx.Response.ContentType = "application/json";
@@ -322,6 +413,16 @@ public partial class AppMain : Control
 
     void DeferredInvoke(string action, string param) =>
         HandleActionFromHost(CenterHost ?? LeftHost ?? RightHost, action, param, null);
+
+    void DeferredShot() => _ = ShotFlow();
+
+    async System.Threading.Tasks.Task ShotFlow()
+    {
+        // readback needs a completed frame, otherwise the image comes out black
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        SaveViewportPng(_shotPath);
+        _shotDone?.Set();
+    }
 
     void DeferredClick(float x, float y)
     {

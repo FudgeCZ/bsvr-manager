@@ -26,6 +26,10 @@ public partial class VrHost : Node3D
     AppMain _app;
     Vector2 _scrollAccum;
     bool _placed;
+    bool _lasersHidden;
+
+    /// <summary>Cover-shot mode: no controllers exist, so park the beams out of sight.</summary>
+    public bool ShowLasers = true;
 
     class Laser
     {
@@ -73,15 +77,15 @@ public partial class VrHost : Node3D
             _panels[i] = panel;
         }
 
-        // frame borders so panels read as objects against dark games
+        // frame borders so panels read as objects against dark games.
+        // parented to the panel so they follow placement (PlacePanel runs later).
         for (int i = 0; i < 3; i++)
         {
             var frame = new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2(_widths[i] * 1.02f, _heights[i] * 1.02f) } };
             var m = new StandardMaterial3D { ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, AlbedoColor = new Color(0.16f, 0.2f, 0.3f) };
             frame.MaterialOverride = m;
-            frame.Position = _panels[i].Position - new Vector3(0, 0, 0.002f);
-            AddChild(frame);
-            _panels[i].TreeExited += () => { };
+            frame.Position = new Vector3(0, 0, -0.002f);
+            _panels[i].AddChild(frame);
         }
 
         _dotMat = new StandardMaterial3D { ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, AlbedoColor = new Color(0.4f, 0.75f, 1f) };
@@ -136,9 +140,24 @@ public partial class VrHost : Node3D
             PlacePanel(_panels[2], eye, forward, 1);
         }
 
-        UpdateLaser(_lasers[0], _left, _dots[0]);
-        UpdateLaser(_lasers[1], _right, _dots[1]);
+        if (ShowLasers)
+        {
+            UpdateLaser(_lasers[0], _left, _dots[0]);
+            UpdateLaser(_lasers[1], _right, _dots[1]);
+        }
+        else
+        {
+            SetLasersVisible(false);
+        }
         UpdateScroll();
+    }
+
+    void SetLasersVisible(bool visible)
+    {
+        if (_lasersHidden == !visible) return;
+        _lasersHidden = !visible;
+        foreach (var laser in _lasers) laser.Beam.Visible = visible;
+        foreach (var dot in _dots) dot.Visible = visible;
     }
 
     void PlacePanel(MeshInstance3D panel, Vector3 eye, Vector3 forward, int side)

@@ -21,6 +21,9 @@ public class UiContext
     /// <summary>Image resolver: returns a texture for a src string (path or URL), or null.</summary>
     public System.Func<string, Texture2D> GetImage;
 
+    /// <summary>Global {token} values (e.g. "version") merged into every widget's row context.</summary>
+    public readonly Dictionary<string, string> GlobalTokens = new();
+
     public readonly Dictionary<string, Control> ById = new();
 
     public void Emit(string action, string param, UiWidget widget)
