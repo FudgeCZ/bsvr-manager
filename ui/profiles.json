@@ -285,9 +285,9 @@
    "w": 640,
    "h": 300,
    "props": {
-    "title": "Remove profile?",
-    "text": "Remove this profile? 'Remove' only removes it from the list and keeps the files. 'Delete folder' also permanently deletes its game folder.",
-    "buttons": "Cancel,Remove,Delete folder",
+    "title": "Delete profile?",
+    "text": "The profile and its entire game folder will be permanently deleted.",
+    "buttons": "Cancel,Delete",
     "onButton": "profiles.remove"
    }
   }

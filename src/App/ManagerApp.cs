@@ -466,24 +466,20 @@ public partial class ManagerApp : AppMain
                 OpenModal("removeModal");
                 break;
 
-            case "profiles.remove": // via removeModal buttons
-                if (_removeTargetId != null && (param == "remove" || param == "delete folder"))
+            case "profiles.remove": // via removeModal — Delete = remove from list AND wipe the folder
+                if (_removeTargetId != null && param == "delete")
                 {
                     var rp = _profiles.Profiles.FirstOrDefault(x => x.Id == _removeTargetId);
                     if (rp != null)
                     {
-                        if (param == "delete folder")
+                        var instances = System.IO.Path.GetFullPath(_settings.EffectiveInstancesDir());
+                        var target = System.IO.Path.GetFullPath(rp.Path);
+                        if (target.StartsWith(instances, System.StringComparison.OrdinalIgnoreCase))
                         {
-                            var instances = System.IO.Path.GetFullPath(_settings.EffectiveInstancesDir());
-                            var target = System.IO.Path.GetFullPath(rp.Path);
-                            if (target.StartsWith(instances, System.StringComparison.OrdinalIgnoreCase))
-                            {
-                                try { Directory.Delete(target, true); _status = $"Profile '{rp.Name}' removed and its folder deleted."; }
-                                catch (Exception e) { _status = $"Profile '{rp.Name}' removed — folder delete failed: {e.Message}"; }
-                            }
-                            else _status = $"Profile '{rp.Name}' removed — its folder is outside the Instances folder and was kept.";
+                            try { Directory.Delete(target, true); _status = $"Profile '{rp.Name}' deleted."; }
+                            catch (Exception e) { _status = $"Profile '{rp.Name}' removed from the list — folder delete failed: {e.Message}"; }
                         }
-                        else _status = "Profile removed from the list — files stay on disk.";
+                        else _status = $"Profile '{rp.Name}' removed — its folder is outside the Instances folder and was kept.";
                         _profiles.Remove(rp.Id);
                     }
                     _removeTargetId = null;
@@ -728,9 +724,8 @@ public partial class ManagerApp : AppMain
             RefreshStatusLabels();
             _steamcmd.Download(profile, entry.Manifest, ok => Ui(() =>
             {
-                if (ok) _profiles.Activate(profile.Id);
-                RefreshCurrent();
                 LoadEnd();
+                AfterDownload(profile, ok);
             }));
             return;
         }
@@ -788,9 +783,8 @@ public partial class ManagerApp : AppMain
         session.OnStatus = s => OnCoreStatus(s);
         session.OnDone += ok => Ui(() =>
         {
-            if (ok) _profiles.Activate(profile.Id);
-            RefreshCurrent();
             LoadEnd();
+            AfterDownload(profile, ok);
         });
         session.Start(profile, entry.Manifest);
     }
@@ -799,6 +793,63 @@ public partial class ManagerApp : AppMain
     {
         if (_pendingProfile != null) { var p = _pendingProfile; _pendingProfile = null; return p; }
         return _profiles.CreateInstance("BS " + version, version, entry.Manifest);
+    }
+
+    /// <summary>Shared tail of every download path: activate the profile, then auto-install
+    /// BSIPA + SongCore (with their dependencies) when BeatMods supports the version.</summary>
+    void AfterDownload(Profile profile, bool ok)
+    {
+        if (ok) _profiles.Activate(profile.Id);
+        RefreshCurrent();
+        if (!ok) return;
+        LoadBegin("Installing BSIPA and SongCore…");
+        Task.Run(() =>
+        {
+            AutoInstallCore(profile);
+            Ui(() => { RefreshCurrent(); LoadEnd(); });
+        });
+    }
+
+    void AutoInstallCore(Profile p)
+    {
+        try
+        {
+            var avail = GetAvail(p);
+            if (avail.Count == 0)
+            {
+                OnCoreStatus("BeatMods has no mods for this game version — BSIPA/SongCore skipped.");
+                return;
+            }
+            var scan = _mods.ScanInstalled(p);
+            foreach (var name in new[] { "BSIPA", "SongCore" })
+            {
+                if (scan.Any(m => m.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    OnCoreStatus($"{name} is already installed.");
+                    continue;
+                }
+                var mod = avail.FirstOrDefault(m => m.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                if (mod == null)
+                {
+                    OnCoreStatus($"{name} is not on BeatMods for this game version.");
+                    continue;
+                }
+                try
+                {
+                    _mods.Install(p, mod); // dependencies resolve automatically
+                    OnCoreStatus($"Auto-installed {name} {mod.Version}.");
+                }
+                catch (Exception e)
+                {
+                    OnCoreStatus($"Auto-install failed for {name}: " + e.Message);
+                }
+            }
+            RescanMods(p);
+        }
+        catch (Exception e)
+        {
+            OnCoreStatus("Auto-install failed: " + e.Message);
+        }
     }
 
     // ---------------- QR login (DepotDownloader -qr) ----------------
@@ -827,9 +878,11 @@ public partial class ManagerApp : AppMain
             if (ok)
             {
                 _status = "Steam login approved — download complete.";
-                if (_pendingProfile != null) { _profiles.Activate(_pendingProfile.Id); _pendingProfile = null; }
+                var prof = _pendingProfile;
+                _pendingProfile = null;
                 _pendingVersion = null;
                 _pendingEntry = null;
+                if (prof != null) AfterDownload(prof, true);
             }
             else
             {
@@ -907,9 +960,8 @@ public partial class ManagerApp : AppMain
         };
         console.Start(profile, entry.Manifest, ok => Ui(() =>
         {
-            if (ok) _profiles.Activate(profile.Id);
-            RefreshCurrent();
             LoadEnd();
+            AfterDownload(profile, ok);
         }));
     }
 
