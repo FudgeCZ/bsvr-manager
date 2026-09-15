@@ -144,7 +144,7 @@
    "h": 46,
    "action": "profiles.import",
    "props": {
-    "text": "Import\u2026",
+    "text": "Import…",
     "fontSize": 19,
     "bgColor": "#303748",
     "radius": 10
@@ -238,7 +238,7 @@
       "action": "launch.profile",
       "param": "{id}",
       "props": {
-       "text": "\u25b6 Launch",
+       "text": "▶ Launch",
        "fontSize": 19,
        "bgColor": "#3f9d63",
        "radius": 8
@@ -286,7 +286,7 @@
    "h": 300,
    "props": {
     "title": "Remove profile?",
-    "text": "Remove this profile? 'Remove' only removes it from the list (files stay on disk). 'Delete folder' also permanently deletes its game folder.",
+    "text": "Remove this profile? 'Remove' only removes it from the list and keeps the files. 'Delete folder' also permanently deletes its game folder.",
     "buttons": "Cancel,Remove,Delete folder",
     "onButton": "profiles.remove"
    }

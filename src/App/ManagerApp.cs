@@ -479,11 +479,11 @@ public partial class ManagerApp : AppMain
                             if (target.StartsWith(instances, System.StringComparison.OrdinalIgnoreCase))
                             {
                                 try { Directory.Delete(target, true); _status = $"Profile '{rp.Name}' removed and its folder deleted."; }
-                                catch (Exception e) { _status = $"Profile '{rp.Name}' removed from the list (folder delete failed: {e.Message})."; }
+                                catch (Exception e) { _status = $"Profile '{rp.Name}' removed — folder delete failed: {e.Message}"; }
                             }
-                            else _status = $"Profile '{rp.Name}' removed (its folder is outside the manager's Instances folder and was kept).";
+                            else _status = $"Profile '{rp.Name}' removed — its folder is outside the Instances folder and was kept.";
                         }
-                        else _status = "Profile removed from the list (files kept on disk).";
+                        else _status = "Profile removed from the list — files stay on disk.";
                         _profiles.Remove(rp.Id);
                     }
                     _removeTargetId = null;
@@ -536,7 +536,7 @@ public partial class ManagerApp : AppMain
                 var toRemove = installedNames.Where(n => !_modsDesired.Contains(n)).ToList();
                 if (toInstall.Count == 0 && toRemove.Count == 0)
                 { _status = "Nothing to change — every mod already matches."; RefreshStatusLabels(); break; }
-                LoadBegin($"Applying mods ({toInstall.Count} install, {toRemove.Count} remove)…");
+                LoadBegin($"Applying mods — {toInstall.Count} installs, {toRemove.Count} removals…");
                 Task.Run(() =>
                 {
                     var avail = GetAvail(p);
@@ -544,11 +544,11 @@ public partial class ManagerApp : AppMain
                     {
                         var mod = avail.FirstOrDefault(m => m.Name == name);
                         if (mod == null) { OnCoreStatus($"'{name}' is not on BeatMods for this game version."); continue; }
-                        try { _mods.Install(p, mod); } catch (Exception e) { OnCoreStatus($"Install failed ({name}): " + e.Message); }
+                        try { _mods.Install(p, mod); } catch (Exception e) { OnCoreStatus($"Install failed — {name}: " + e.Message); }
                     }
                     foreach (var name in toRemove)
                     {
-                        try { _mods.Uninstall(p, name); } catch (Exception e) { OnCoreStatus($"Uninstall failed ({name}): " + e.Message); }
+                        try { _mods.Uninstall(p, name); } catch (Exception e) { OnCoreStatus($"Uninstall failed — {name}: " + e.Message); }
                     }
                     RescanMods(p);
                     Ui(() => { RefreshCurrent(); LoadEnd(); });
@@ -671,7 +671,7 @@ public partial class ManagerApp : AppMain
         try
         {
             Process.Start(new ProcessStartInfo(exe) { WorkingDirectory = p.Path });
-            _status = $"Launching '{p.Name}' (Beat Saber {p.GameVersion()})…";
+            _status = $"Launching '{p.Name}' — Beat Saber {p.GameVersion()}…";
         }
         catch (Exception e) { _status = "Launch failed: " + e.Message; }
         RefreshStatusLabels();
@@ -768,7 +768,7 @@ public partial class ManagerApp : AppMain
                         _status = ddOk
                             ? "Scan the QR code with the Steam mobile app to approve the login."
                             : scOk
-                                ? "Helpers ready — log in once with your Steam account (QR unavailable)."
+                                ? "Helpers ready — log in once with your Steam account."
                                 : "Could not download the login helpers — check your internet connection.";
                         RefreshStatusLabels();
                         if (ddOk) StartQrSession();

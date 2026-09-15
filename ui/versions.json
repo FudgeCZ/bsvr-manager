@@ -268,7 +268,7 @@
    "h": 500,
    "props": {
     "title": "One-time Steam login needed",
-    "text": "Scan the QR code with the Steam mobile app (Steam Guard) to approve the login \u2014 the download continues automatically once approved. Or log in with your account password in Settings.",
+    "text": "Scan the QR code with the Steam mobile app to approve the login — the download continues automatically once approved. Or log in with your account password in Settings.",
     "buttons": "Log in with password,Use Steam Console,Cancel",
     "onButton": "login.choice"
    }

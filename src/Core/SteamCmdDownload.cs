@@ -112,7 +112,7 @@ public class SteamCmdDownload
     /// guardCode: Steam Guard / 2FA code when enabled on the account (may be empty).</summary>
     public bool Login(string user, string password, string guardCode)
     {
-        OnStatus?.Invoke("Logging into Steam (steamcmd)…");
+        OnStatus?.Invoke("Logging into Steam…");
         string stdin = null;
         var loginCmd = $"+login {user} {password}";
         if (!string.IsNullOrEmpty(guardCode))
@@ -182,7 +182,7 @@ public class SteamCmdDownload
                 }
                 else
                 {
-                    OnStatus?.Invoke("Background download failed (steamcmd exit " + code + "). Are you logged in?");
+                    OnStatus?.Invoke($"Background download failed — steamcmd exit code {code}. Are you logged in?");
                     onDone?.Invoke(false);
                 }
             }

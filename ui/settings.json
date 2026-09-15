@@ -152,7 +152,7 @@
      "w": 700,
      "h": 120,
      "props": {
-      "text": "Copies profile metadata (name, version, folder) from BSManager. Game folders are used in place \u2014 nothing multi-GB is copied. Existing profiles are updated, never duplicated.",
+      "text": "Copies each profile's name, version and folder from BSManager. Game folders are used in place — nothing multi-GB is copied. Existing profiles are updated, never duplicated.",
       "fontSize": 18,
       "color": "#9aa3b5",
       "wrap": true,
@@ -228,7 +228,8 @@
    "h": 320,
    "props": {
     "bgColor": "#232a38",
-    "radius": 14
+    "radius": 14,
+    "text": "Steam account — background downloads"
    },
    "children": [
     {
@@ -276,7 +277,7 @@
      "w": 340,
      "h": 46,
      "props": {
-      "placeholder": "2FA / Steam Guard code (if asked)",
+      "placeholder": "2FA / Steam Guard code, if asked",
       "fontSize": 19
      }
     },
@@ -289,7 +290,7 @@
      "h": 46,
      "action": "settings.steamcmd.login",
      "props": {
-      "text": "Log in (one time)",
+      "text": "Log in once",
       "fontSize": 20,
       "bgColor": "#2f6fce",
       "radius": 10
@@ -303,7 +304,7 @@
      "w": 700,
      "h": 110,
      "props": {
-      "text": "One-time login: steamcmd caches your session (password never stored), then every version download runs silently in the background - also on Steam Frame / SteamOS.",
+      "text": "One-time login: steamcmd caches your session, the password is never stored. Every version download then runs silently in the background — also on Steam Frame / SteamOS.",
       "fontSize": 17,
       "color": "#9aa3b5",
       "wrap": true,

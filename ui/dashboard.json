@@ -1,33 +1,261 @@
 {
-  "version": "1",
-  "name": "dashboard",
-  "width": 1600,
-  "height": 900,
-  "background": "#14171f",
-  "children": [
-    { "id": "navbar", "type": "panel", "x": 0, "y": 0, "w": 1600, "h": 72, "props": { "bgColor": "#1e2330", "radius": 0 },
-      "children": [
-        { "id": "nav_dashboard", "type": "button", "x": 40, "y": 14, "w": 150, "h": 44, "action": "nav.dashboard", "props": { "text": "Dashboard", "fontSize": 20, "bgColor": "#477cf2", "radius": 8 } },
-        { "id": "nav_profiles", "type": "button", "x": 200, "y": 14, "w": 150, "h": 44, "action": "nav.profiles", "props": { "text": "Profiles", "fontSize": 20, "bgColor": "#303748", "radius": 8 } },
-        { "id": "nav_mods", "type": "button", "x": 360, "y": 14, "w": 150, "h": 44, "action": "nav.mods", "props": { "text": "Mods", "fontSize": 20, "bgColor": "#303748", "radius": 8 } },
-        { "id": "nav_versions", "type": "button", "x": 520, "y": 14, "w": 150, "h": 44, "action": "nav.versions", "props": { "text": "Versions", "fontSize": 20, "bgColor": "#303748", "radius": 8 } },
-        { "id": "nav_settings", "type": "button", "x": 680, "y": 14, "w": 150, "h": 44, "action": "nav.settings", "props": { "text": "Settings", "fontSize": 20, "bgColor": "#303748", "radius": 8 } },
-        { "id": "app_title", "type": "label", "x": 1280, "y": 14, "w": 280, "h": 44, "props": { "text": "BS VR Manager", "fontSize": 24, "color": "#477cf2", "align": "right" } }
-      ]
+ "version": "1",
+ "name": "dashboard",
+ "width": 1600,
+ "height": 900,
+ "background": "#14171f",
+ "children": [
+  {
+   "id": "navbar",
+   "type": "panel",
+   "x": 0,
+   "y": 0,
+   "w": 1600,
+   "h": 72,
+   "props": {
+    "bgColor": "#1e2330",
+    "radius": 0
+   },
+   "children": [
+    {
+     "id": "nav_dashboard",
+     "type": "button",
+     "x": 40,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.dashboard",
+     "props": {
+      "text": "Dashboard",
+      "fontSize": 20,
+      "bgColor": "#477cf2",
+      "radius": 8
+     }
     },
-    { "id": "welcome", "type": "label", "x": 40, "y": 140, "w": 900, "h": 56, "props": { "text": "Welcome", "fontSize": 40 } },
-    { "id": "profile_card", "type": "panel", "x": 40, "y": 220, "w": 1520, "h": 380, "props": { "bgColor": "#232a38", "radius": 14 },
-      "children": [
-        { "id": "profile_card_title", "type": "label", "x": 32, "y": 28, "w": 500, "h": 36, "props": { "text": "Active profile", "fontSize": 24, "color": "#9aa3b5" } },
-        { "id": "activeProfile", "type": "label", "x": 32, "y": 76, "w": 900, "h": 56, "props": { "text": "…", "fontSize": 40 } },
-        { "id": "profileVersion", "type": "label", "x": 32, "y": 148, "w": 900, "h": 36, "props": { "text": "Beat Saber …", "fontSize": 24, "color": "#9aa3b5" } },
-        { "id": "profileMods", "type": "label", "x": 32, "y": 188, "w": 900, "h": 36, "props": { "text": "Mods: …", "fontSize": 24, "color": "#9aa3b5" } },
-        { "id": "warnLabel", "type": "label", "x": 32, "y": 228, "w": 1440, "h": 40, "props": { "text": "", "fontSize": 20, "color": "#f2ad42", "wrap": true } },
-        { "id": "launchBtn", "type": "button", "x": 32, "y": 286, "w": 300, "h": 64, "action": "launch.active", "props": { "text": "▶  Launch Game", "fontSize": 26, "bgColor": "#3f9d63", "radius": 10 } },
-        { "id": "switchBtn", "type": "button", "x": 356, "y": 286, "w": 300, "h": 64, "action": "nav.profiles", "props": { "text": "Switch profile", "fontSize": 26, "bgColor": "#303748", "radius": 10 } }
-      ]
+    {
+     "id": "nav_profiles",
+     "type": "button",
+     "x": 200,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.profiles",
+     "props": {
+      "text": "Profiles",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
     },
-    { "id": "statusLine", "type": "label", "x": 40, "y": 640, "w": 1520, "h": 90, "props": { "text": "", "fontSize": 20, "color": "#9aa3b5", "wrap": true } },
-    { "id": "importModal", "type": "modal", "x": 480, "y": 250, "w": 640, "h": 320, "props": { "title": "Import BSManager profiles?", "text": "BSManager was detected on this PC. Copy its profiles (name, game version, folder) into BS VR Manager? Nothing multi-GB is copied — existing folders are used in place, and profiles already imported are updated, never duplicated.", "buttons": "Import,Not now", "onButton": "import.choice" } }
-  ]
+    {
+     "id": "nav_mods",
+     "type": "button",
+     "x": 360,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.mods",
+     "props": {
+      "text": "Mods",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_versions",
+     "type": "button",
+     "x": 520,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.versions",
+     "props": {
+      "text": "Versions",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "nav_settings",
+     "type": "button",
+     "x": 680,
+     "y": 14,
+     "w": 150,
+     "h": 44,
+     "action": "nav.settings",
+     "props": {
+      "text": "Settings",
+      "fontSize": 20,
+      "bgColor": "#303748",
+      "radius": 8
+     }
+    },
+    {
+     "id": "app_title",
+     "type": "label",
+     "x": 1280,
+     "y": 14,
+     "w": 280,
+     "h": 44,
+     "props": {
+      "text": "BS VR Manager",
+      "fontSize": 24,
+      "color": "#477cf2",
+      "align": "right"
+     }
+    }
+   ]
+  },
+  {
+   "id": "welcome",
+   "type": "label",
+   "x": 40,
+   "y": 140,
+   "w": 900,
+   "h": 56,
+   "props": {
+    "text": "Welcome",
+    "fontSize": 40
+   }
+  },
+  {
+   "id": "profile_card",
+   "type": "panel",
+   "x": 40,
+   "y": 220,
+   "w": 1520,
+   "h": 380,
+   "props": {
+    "bgColor": "#232a38",
+    "radius": 14
+   },
+   "children": [
+    {
+     "id": "profile_card_title",
+     "type": "label",
+     "x": 32,
+     "y": 28,
+     "w": 500,
+     "h": 36,
+     "props": {
+      "text": "Active profile",
+      "fontSize": 24,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "activeProfile",
+     "type": "label",
+     "x": 32,
+     "y": 76,
+     "w": 900,
+     "h": 56,
+     "props": {
+      "text": "…",
+      "fontSize": 40
+     }
+    },
+    {
+     "id": "profileVersion",
+     "type": "label",
+     "x": 32,
+     "y": 148,
+     "w": 900,
+     "h": 36,
+     "props": {
+      "text": "Beat Saber …",
+      "fontSize": 24,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "profileMods",
+     "type": "label",
+     "x": 32,
+     "y": 188,
+     "w": 900,
+     "h": 36,
+     "props": {
+      "text": "Mods: …",
+      "fontSize": 24,
+      "color": "#9aa3b5"
+     }
+    },
+    {
+     "id": "warnLabel",
+     "type": "label",
+     "x": 32,
+     "y": 228,
+     "w": 1440,
+     "h": 40,
+     "props": {
+      "text": "",
+      "fontSize": 20,
+      "color": "#f2ad42",
+      "wrap": true
+     }
+    },
+    {
+     "id": "launchBtn",
+     "type": "button",
+     "x": 32,
+     "y": 286,
+     "w": 300,
+     "h": 64,
+     "action": "launch.active",
+     "props": {
+      "text": "▶  Launch Game",
+      "fontSize": 26,
+      "bgColor": "#3f9d63",
+      "radius": 10
+     }
+    },
+    {
+     "id": "switchBtn",
+     "type": "button",
+     "x": 356,
+     "y": 286,
+     "w": 300,
+     "h": 64,
+     "action": "nav.profiles",
+     "props": {
+      "text": "Switch profile",
+      "fontSize": 26,
+      "bgColor": "#303748",
+      "radius": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "statusLine",
+   "type": "label",
+   "x": 40,
+   "y": 640,
+   "w": 1520,
+   "h": 90,
+   "props": {
+    "text": "",
+    "fontSize": 20,
+    "color": "#9aa3b5",
+    "wrap": true
+   }
+  },
+  {
+   "id": "importModal",
+   "type": "modal",
+   "x": 480,
+   "y": 250,
+   "w": 640,
+   "h": 320,
+   "props": {
+    "title": "Import BSManager profiles?",
+    "text": "BSManager was detected on this PC. Copy each profile's name, game version and folder into BS VR Manager? Nothing multi-GB is copied; existing folders are used in place, and already imported profiles are updated, never duplicated.",
+    "buttons": "Import,Not now",
+    "onButton": "import.choice"
+   }
+  }
+ ]
 }

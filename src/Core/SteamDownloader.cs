@@ -186,8 +186,8 @@ public class SteamConsoleDownload
                         var actualClean = actualVersion.Contains('_') ? actualVersion[..actualVersion.IndexOf('_')] : actualVersion;
                         if (!string.Equals(actualClean, expected, StringComparison.OrdinalIgnoreCase))
                         {
-                            OnStatus?.Invoke($"WARNING: Steam's content for the requested manifest is Beat Saber {actualVersion}, not {expected}. The version catalog entry is wrong — the profile was renamed to '{profile.Name} (actual {actualClean})' and the catalog entry was disabled.");
-                            profile.Name += $" (actual {actualClean})";
+                            OnStatus?.Invoke($"WARNING: Steam's content for the requested manifest is Beat Saber {actualVersion}, not {expected}. The catalog entry is wrong — the profile was renamed to '{profile.Name} · actual {actualClean}' and the catalog entry was disabled.");
+                            profile.Name += $" · actual {actualClean}";
                             profile.Version = actualClean;
                             OnWrongManifest?.Invoke(manifest);
                         }
@@ -205,7 +205,7 @@ public class SteamConsoleDownload
                 if (totalFiles > 0)
                 {
                     int pct = (int)Math.Min(99, count * 100.0 / totalFiles);
-                    var text = $"Downloading… {count}/{totalFiles} files ({pct}%) · depot is {totalMB} MB (Steam's downloads page shows nothing for console depots)";
+                    var text = $"Downloading… {count}/{totalFiles} files · {pct}% · depot is {totalMB} MB";
                     OnProgress?.Invoke(pct, text);
                 }
                 else
@@ -249,7 +249,7 @@ public class SteamConsoleDownload
             if (!string.Equals(actualClean, expectedVersion, StringComparison.OrdinalIgnoreCase))
             {
                 onStatus?.Invoke($"WARNING: the downloaded content is Beat Saber {actualVersion}, not {expectedVersion}. The catalog entry is wrong — profile renamed and the manifest disabled.");
-                profile.Name += $" (actual {actualClean})";
+                profile.Name += $" · actual {actualClean}";
                 profile.Version = actualClean;
                 return false;
             }
@@ -410,7 +410,7 @@ public class DepotDownload
         var exe = FindExe();
         if (exe == null)
         {
-            OnStatus?.Invoke("DepotDownloader.exe not found (checked tools and BSManager's copy).");
+            OnStatus?.Invoke("DepotDownloader.exe not found — it should sit in the tools folder.");
             onDone?.Invoke(false);
             return;
         }
