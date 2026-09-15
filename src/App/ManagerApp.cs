@@ -889,6 +889,17 @@ public partial class ManagerApp : AppMain
         _status = $"Downloading Beat Saber {entry.Version} via Steam console → profile '{profile.Name}'…";
         RefreshStatusLabels();
         var console = new SteamConsoleDownload(_settings) { OnStatus = s => OnCoreStatus(s) };
+        console.OnProgress = (pct, text) => Ui(() =>
+        {
+            _status = text;
+            foreach (var h in Hosts)
+            {
+                h.Loading.ShowLoading(text); // live progress on the overlay
+                var bar = h.Ctx.ById.TryGetValue("downloadProgress", out var c) ? c : null;
+                if (bar != null) UiRuntime.SetProgressValue(bar, pct);
+            }
+            RefreshStatusLabels();
+        });
         console.OnWrongManifest += m =>
         {
             _catalog.BlacklistManifest(m);

@@ -21,6 +21,7 @@ public class SteamConsoleDownload
 
     readonly Settings _settings;
     public Action<string> OnStatus;
+    public Action<int, string> OnProgress; // percent 0-100, progress text (drives the loading overlay + bar)
 
     public SteamConsoleDownload(Settings settings) { _settings = settings; }
 
@@ -46,7 +47,7 @@ public class SteamConsoleDownload
             }
         }
         RunAutopaste(cmd);
-        OnStatus?.Invoke("Sent to Steam console — download starts automatically. Watch Steam for progress.");
+        OnStatus?.Invoke("Sent to Steam console — downloading in the background, progress shows here.");
 
         var thread = new Thread(() => Watch(profile, manifest, onDone)) { IsBackground = true };
         thread.Start();
@@ -97,35 +98,85 @@ public class SteamConsoleDownload
         return null;
     }
 
-    /// <summary>Polls Steam libraries for the depot. Complete = Steam's download_depot marker gone
-    /// (or never appeared) AND file count stable for 60 s AND Beat Saber.exe present.</summary>
+    /// <summary>Polls the depot folder AND Steam's console log. Steam's desktop console never
+    /// prints progress — it logs only "Downloading depot 620981 (N files, M MB)" and
+    /// "Depot download complete" — so the log gives us totals and instant completion;
+    /// the file count in the depot folder gives live progress.</summary>
     void Watch(Profile profile, string manifest, Action<bool> onDone)
     {
         var deadline = DateTime.UtcNow.AddHours(6);
         int lastCount = -1;
         DateTime lastChange = DateTime.UtcNow;
+        long logPos = 0;
+        int totalFiles = 0, totalMB = 0, doneFiles = 0;
+        bool sawComplete = false;
+
+        var progressRe = new System.Text.RegularExpressions.Regex(
+            $@"Downloading depot {DepotId} \((\d+) files,\s*([\d.]+)\s*MB\)");
+        var completeRe = new System.Text.RegularExpressions.Regex(
+            @"Depot download complete\s*:\s*""([^""]+)""");
 
         while (DateTime.UtcNow < deadline)
         {
+            // tail Steam's console log for totals + the instant completion marker
+            var log = ConsoleLogPath();
+            if (log != null)
+            {
+                try
+                {
+                    var fi = new FileInfo(log);
+                    if (fi.Length < logPos) logPos = 0; // rotated/truncated
+                    if (fi.Length > logPos)
+                    {
+                        using var fs = new FileStream(log, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        fs.Seek(logPos, SeekOrigin.Begin);
+                        using var sr = new StreamReader(fs);
+                        var chunk = sr.ReadToEnd();
+                        logPos = fs.Position;
+                        foreach (var raw in chunk.Split('\n'))
+                        {
+                            var line = raw.Trim();
+                            var m = progressRe.Match(line);
+                            if (m.Success)
+                            {
+                                totalFiles = int.Parse(m.Groups[1].Value);
+                                totalMB = (int)double.Parse(m.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+                                sawComplete = false; // a new download of this depot started
+                                continue;
+                            }
+                            m = completeRe.Match(line);
+                            if (m.Success && m.Groups[1].Value.Contains($"depot_{DepotId}"))
+                                sawComplete = true;
+                        }
+                    }
+                }
+                catch { }
+            }
+
             var depotDir = FindLandedDepot();
             if (depotDir != null)
             {
                 var count = Directory.GetFiles(depotDir, "*", SearchOption.AllDirectories).Length;
-                var marker = DownloadingMarker();
                 if (count != lastCount)
                 {
                     lastCount = count;
                     lastChange = DateTime.UtcNow;
-                    OnStatus?.Invoke($"Depot downloading… {count} files so far (Steam shows its own progress).");
                 }
-                else if (DateTime.UtcNow - lastChange > TimeSpan.FromSeconds(60) && count > 100
-                         && File.Exists(System.IO.Path.Combine(depotDir, "Beat Saber.exe"))
-                         && marker == null)
+
+                bool exePresent = File.Exists(System.IO.Path.Combine(depotDir, "Beat Saber.exe"));
+                bool stable = DateTime.UtcNow - lastChange > TimeSpan.FromSeconds(20) && count > 100 && exePresent && DownloadingMarker() == null;
+                if (sawComplete || stable)
                 {
-                    OnStatus?.Invoke($"Depot download finished ({count} files) — importing into profile…");
+                    OnProgress?.Invoke(100, $"Importing {count} files into the profile…");
+                    OnStatus?.Invoke($"Depot finished — importing {count} files into '{profile.Name}'…");
                     try
                     {
-                        CopyGameFiles(depotDir, profile.Path);
+                        int copied = 0;
+                        CopyGameFiles(depotDir, profile.Path, (i, n) =>
+                        {
+                            if (i % 25 == 0 || i == n)
+                                OnProgress?.Invoke(100, $"Importing {i}/{n} files into the profile…");
+                        });
                         // some depot builds ship an empty BeatSaberVersion.txt — label with the requested version
                         var vf = System.IO.Path.Combine(profile.Path, "BeatSaberVersion.txt");
                         if (!File.Exists(vf) || File.ReadAllText(vf).Trim().Length == 0)
@@ -150,11 +201,33 @@ public class SteamConsoleDownload
                     }
                     return;
                 }
+
+                if (totalFiles > 0)
+                {
+                    int pct = (int)Math.Min(99, count * 100.0 / totalFiles);
+                    var text = $"Downloading… {count}/{totalFiles} files ({pct}%) · depot is {totalMB} MB (Steam's downloads page shows nothing for console depots)";
+                    OnProgress?.Invoke(pct, text);
+                }
+                else
+                {
+                    OnProgress?.Invoke(0, $"Depot downloading… {count} files so far.");
+                }
             }
             Thread.Sleep(3000);
         }
         OnStatus?.Invoke("Timed out waiting for the Steam depot download (6 h).");
         onDone?.Invoke(false);
+    }
+
+    /// <summary>Steam's install root writes its console log to logs\console_log.txt.</summary>
+    static string ConsoleLogPath()
+    {
+        foreach (var lib in SteamLibraries())
+        {
+            var p = System.IO.Path.Combine(lib, "logs", "console_log.txt");
+            if (File.Exists(p)) return p;
+        }
+        return null;
     }
 
     /// <summary>Reported when a manifest delivered different content than requested.</summary>
@@ -213,8 +286,9 @@ public class SteamConsoleDownload
             if (Directory.Exists(c)) yield return c;
     }
 
-    /// <summary>Copies a game tree, skipping user-content folders that shouldn't be overwritten.</summary>
-    public static void CopyGameFiles(string src, string dst)
+    /// <summary>Copies a game tree, skipping user-content folders that shouldn't be overwritten.
+    /// progress(current, total) fires per file when provided.</summary>
+    public static void CopyGameFiles(string src, string dst, Action<int, int> progress = null)
     {
         var skip = new[] { "CustomLevels", "CustomSabers", "CustomPlatforms", "CustomAvatars", "CustomNotes", "CustomWIPLevels", "Playlists", "UserData" };
         Directory.CreateDirectory(dst);
@@ -225,7 +299,9 @@ public class SteamConsoleDownload
             if (skip.Contains(top, StringComparer.OrdinalIgnoreCase)) continue;
             Directory.CreateDirectory(System.IO.Path.Combine(dst, rel));
         }
-        foreach (var file in Directory.GetFiles(src, "*", SearchOption.AllDirectories))
+        var files = Directory.GetFiles(src, "*", SearchOption.AllDirectories);
+        int done = 0;
+        foreach (var file in files)
         {
             var rel = System.IO.Path.GetRelativePath(src, file);
             var top = rel.Split(System.IO.Path.DirectorySeparatorChar)[0];
@@ -233,6 +309,8 @@ public class SteamConsoleDownload
             var target = System.IO.Path.Combine(dst, rel);
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(target));
             File.Copy(file, target, true);
+            done++;
+            progress?.Invoke(done, files.Length);
         }
     }
 }
