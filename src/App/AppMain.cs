@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Diagnostics;
 using Godot;
 using BSVRManager.Core;
 using BSVRManager.UiKit;
@@ -70,8 +71,8 @@ public partial class AppMain : Control
             var xr = XRServer.FindInterface("OpenXR");
             if (xr == null || !xr.IsInitialized())
             {
-                GD.Print("[vr] OpenXR not initialized at boot — desktop columns mode");
-                StartDesktop();
+                GD.Print("[vr] OpenXR not initialized at boot — relaunching as desktop.");
+                RelaunchDesktop("No VR runtime was available.");
                 return;
             }
             GetViewport().UseXR = true;
@@ -105,8 +106,40 @@ public partial class AppMain : Control
         {
             GD.PushWarning("[vr] init failed: " + e.Message);
             VrActive = false;
-            StartDesktop();
+            RelaunchDesktop("VR initialization failed: " + e.Message);
         }
+    }
+
+    /// <summary>VR failed at boot — restart once into a clean desktop window. The child runs
+    /// with --desktop-launched so it never enters this path again (no loops).</summary>
+    void RelaunchDesktop(string reason)
+    {
+        try
+        {
+            var exe = OS.GetExecutablePath();
+            var psi = new ProcessStartInfo(exe) { UseShellExecute = false };
+            foreach (var a in OsCmdlineArgs())
+                if (a != "--desktop-launched")
+                    psi.ArgumentList.Add(a);
+            psi.ArgumentList.Add("--desktop-launched");
+            Process.Start(psi);
+        }
+        catch (Exception e)
+        {
+            GD.PushWarning("Desktop relaunch failed, continuing in this window: " + e.Message);
+            StartDesktop();
+            ShowInitial();
+            return;
+        }
+        GD.Print("[vr] relaunched as desktop — " + reason);
+        GetTree().Quit();
+    }
+
+    System.Collections.Generic.List<string> OsCmdlineArgs()
+    {
+        var all = new System.Collections.Generic.List<string>(OS.GetCmdlineArgs());
+        all.AddRange(OS.GetCmdlineUserArgs());
+        return all;
     }
 
     static readonly string[] CenterScreens = { "dashboard", "profiles", "mods", "maps", "versions", "settings" };

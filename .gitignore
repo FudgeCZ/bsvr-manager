@@ -17,7 +17,6 @@ tools/DepotDownloader*/
 
 # Build output
 build/
-build-linux/
 out/
 
 # Local junk
