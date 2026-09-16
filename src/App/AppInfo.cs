@@ -4,5 +4,5 @@ namespace BSVRManager.App;
 /// the window title, and used by tools\export.ps1 to name the build output.</summary>
 public static class AppInfo
 {
-    public const string Version = "1.0.0";
+    public const string Version = "1.0.1";
 }

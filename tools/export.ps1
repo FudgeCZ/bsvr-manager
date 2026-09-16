@@ -32,7 +32,9 @@ Copy-Item "$root\ui\*.json" "$root\build\ui\" -Force
 $shell = New-Object -ComObject WScript.Shell
 Get-ChildItem "$env:USERPROFILE\Desktop\*.lnk" -ErrorAction SilentlyContinue | ForEach-Object {
     $lnk = $shell.CreateShortcut($_.FullName)
-    if ($lnk.TargetPath -ieq "$root\build\BSVRManager.exe") {
+    $t = $lnk.TargetPath
+    # repoint any shortcut at an older BSVRManager exe in build\ (versioned or not)
+    if (($t -like "$root\build\BSVRManager*.exe") -and (Split-Path $t -Parent -ErrorAction SilentlyContinue) -ieq "$root\build" -and $t -ne $versioned) {
         $lnk.TargetPath = $versioned
         $lnk.Save()
         Write-Host "shortcut updated: $($_.Name)"
