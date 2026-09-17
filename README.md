@@ -11,7 +11,7 @@ A Beat Saber **mod manager that runs in VR** — and as a normal desktop window.
 ## Download
 
 Grab the latest release from the
-[Releases page](https://github.com/FudgeCZ/bsvr-manager/releases) or the itch.io page.
+[Releases page](https://github.com/FudgeCZ/bsvr-manager/releases) or the [itch.io](https://fudgee.itch.io/bsvr-manager) page.
 Unzip, run the exe, and log in to Steam once in Settings to enable version downloads.
 
 ## Requirements
